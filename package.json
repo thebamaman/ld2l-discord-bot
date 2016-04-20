@@ -1,0 +1,23 @@
+{
+  "name": "ld2l-discord-bot",
+  "version": "1.0.0",
+  "description": "A discord chat bot to help manage day to day services for the Learn Dota 2 League",
+  "main": "ld2l.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node ld2l.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ammuench/ld2l-discord-bot.git"
+  },
+  "author": "Alexander Muench",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ammuench/ld2l-discord-bot/issues"
+  },
+  "homepage": "https://github.com/ammuench/ld2l-discord-bot#readme",
+  "dependencies": {
+    "discord.js": "^7.0.1"
+  }
+}
