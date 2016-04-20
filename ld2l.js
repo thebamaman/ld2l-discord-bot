@@ -5,6 +5,7 @@
 //Require needs deps and auth file
 var Discord = require('./node_modules/discord.js');
 var AuthDetails = require('./auth.json');
+var CalendarApi = require('./ld2lCalendarApi.js');
 
 var commandPredecessor = "!";
 
@@ -61,7 +62,10 @@ function scheduleMatch(message, channel) {
 		scheduleInfo.time = scheduleCommand[6];
 		scheduleInfo.timePeriod = scheduleCommand[7];
 		scheduleInfo.timeZone = scheduleCommand[8];
-		bot.sendMessage(channel, JSON.stringify(scheduleInfo));
+		CalendarApi.addToGoogleCalendar(scheduleInfo);
+		var matchScheduledMessage = "Match has been scheduled for " + scheduleInfo.team1 + " vs " + scheduleInfo.team2 + " at " +
+			scheduleInfo.time + " " + scheduleInfo.timePeriod + " " + scheduleInfo.timeZone;
+		bot.sendMessage(channel, matchScheduledMessage);
 	} else {
 		showInvalidCommand(channel);
 	}

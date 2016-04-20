@@ -3,23 +3,29 @@ var readline = require('readline');
 var google = require('googleapis');
 var googleAuth = require('google-auth-library');
 
-// If modifying these scopes, delete your previously saved credentials
-// at ~/.credentials/script-nodejs-quickstart.json
-var SCOPES = ['https://www.googleapis.com/auth/drive'];
+var monthNames = ["January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December"
+];
+
+var SCOPES = ['https://www.googleapis.com/auth/calendar', 'https://www.google.com/calendar/feeds'];
 var TOKEN_DIR = (process.env.HOME || process.env.HOMEPATH ||
     process.env.USERPROFILE) + '/.credentials/';
-var TOKEN_PATH = TOKEN_DIR + 'script-nodejs-quickstart.json';
+var TOKEN_PATH = TOKEN_DIR + 'ld2l-calendar-api.json';
 
 // Load client secrets from a local file.
-fs.readFile('client_secret.json', function processClientSecrets(err, content) {
-  if (err) {
-    console.log('Error loading client secret file: ' + err);
-    return;
+module.exports = {
+  addToGoogleCalendar: function(scheduleInfo) {
+    fs.readFile('client_secret.json', function processClientSecrets(err, content) {
+      if (err) {
+        console.log('Error loading client secret file: ' + err);
+        return;
+      }
+      // Authorize a client with the loaded credentials, then call the
+      // Google Apps Script Execution API.
+      authorize(JSON.parse(content), scheduleInfo, callAppsScript);
+    });
   }
-  // Authorize a client with the loaded credentials, then call the
-  // Google Apps Script Execution API.
-  authorize(JSON.parse(content), callAppsScript);
-});
+}
 
 /**
  * Create an OAuth2 client with the given credentials, and then execute the
@@ -28,7 +34,7 @@ fs.readFile('client_secret.json', function processClientSecrets(err, content) {
  * @param {Object} credentials The authorization client credentials.
  * @param {function} callback The callback to call with the authorized client.
  */
-function authorize(credentials, callback) {
+function authorize(credentials, scheduleInfo, callback) {
   var clientSecret = credentials.installed.client_secret;
   var clientId = credentials.installed.client_id;
   var redirectUrl = credentials.installed.redirect_uris[0];
@@ -41,7 +47,7 @@ function authorize(credentials, callback) {
       getNewToken(oauth2Client, callback);
     } else {
       oauth2Client.credentials = JSON.parse(token);
-      callback(oauth2Client);
+      callback(oauth2Client, scheduleInfo);
     }
   });
 }
@@ -101,15 +107,25 @@ function storeToken(token) {
  *
  * @param {google.auth.OAuth2} auth An authorized OAuth2 client.
  */
-function callAppsScript(auth) {
-  var scriptId = 'ENTER_YOUR_SCRIPT_ID_HERE';
+function callAppsScript(auth, scheduleInfo) {
+  var scriptId = 'M11dUZp9TOMHRvOK1io6Gr2l4h4jajEHq';
   var script = google.script('v1');
+
+  var date = scheduleInfo.date.split("/");
+  var day = date[0];
+  var month = date[1];
+  var year = date[2];
+
+  var endingTime = (parseInt(scheduleInfo.time.split(":")) + 1) + ":00";
+  var startTime = monthNames[month - 1] + " " + day + ", " + year + " " + scheduleInfo.time + " " + scheduleInfo.timePeriod + " " + scheduleInfo.timeZone;
+  var endTime = monthNames[month - 1] + " " + day + ", " + year + " " + endingTime + " " + scheduleInfo.timePeriod + " " + scheduleInfo.timeZone;
 
   // Make the API request. The request object is included here as 'resource'.
   script.scripts.run({
     auth: auth,
     resource: {
-      function: 'getFoldersUnderRoot'
+      function: 'addToCalendar',
+      parameters: [scheduleInfo.team1, scheduleInfo.team2, startTime, endTime]
     },
     scriptId: scriptId
   }, function(err, resp) {
@@ -135,21 +151,6 @@ function callAppsScript(auth) {
           console.log('\t%s: %s', trace.function, trace.lineNumber);
         }
       }
-    } else {
-      // The structure of the result will depend upon what the Apps Script
-      // function returns. Here, the function returns an Apps Script Object
-      // with String keys and values, and so the result is treated as a
-      // Node.js object (folderSet).
-      var folderSet = resp.response.result;
-      if (Object.keys(folderSet).length == 0) {
-        console.log('No folders returned!');
-      } else {
-        console.log('Folders under your root folder:');
-        Object.keys(folderSet).forEach(function(id){
-          console.log('\t%s (%s)', folderSet[id], id);
-        });
-      }
     }
-
   });
 }
