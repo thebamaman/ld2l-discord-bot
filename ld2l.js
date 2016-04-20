@@ -31,13 +31,12 @@ bot.on('message', function (msg) {
 	message = msg.content;
 	if (message.indexOf(commandPredecessor) === 0) {
 		command = message.split(" ")[0].toLowerCase().substr(1);
-		console.log("\"" + command + "\"")
 		switch (command) {
 			case "schedule":
-				scheduleMatch(message);
+				scheduleMatch(message, msg.channel);
 				break;
 			case "help":
-				showHelp(msg.channel);
+				showHelp(msg.channel, msg.author);
 				break;
 			default:
 				showInvalidCommand(msg.channel);
@@ -49,7 +48,7 @@ bot.on('message', function (msg) {
 //Login with auth.json
 bot.login(AuthDetails.email, AuthDetails.password);
 
-function scheduleMatch(message) {
+function scheduleMatch(message, channel) {
 	var scheduleInfo = {};
 	scheduleInfo.team1 = /(?=Team 1:).+/.exec(message)[0].split('Team 1:')[1];
 	scheduleInfo.team2 = /(?=Team 2:).+/.exec(message)[0].split('Team 2:')[1];
@@ -62,7 +61,12 @@ function showInvalidCommand(channel) {
 	bot.sendMessage(channel, invalidCommandMsg);
 }
 
-function showHelp(channel) {
-	var helpMsg= "Hi, I'm LD2L Bot!  To schedule a match, please make a post with the following structure: \n!schedule\nTeam 1: [Team Name]\nTeam 2: [Team Name]\nTime: [MM/DD/YYYY HH:MM(AM/PM)(TMZ)";
-	bot.sendMessage(channel, helpMsg);
+function showHelp(channel, user) {
+	var helpMsgPmed = "Hi, " + user.username + "! Please check your PM for information on how to use me."
+	var helpMsg = "Hi, I'm LD2L Bot!\n" +
+	"To schedule a match, please make a post with the following structure: \n" +
+	"!schedule <Team 1> VS <Team 2> DD/MM/YYYY HH:MM AM/PM TMZ\n" +
+	"Example: NASOLO#1 VS NASOLO#2 25/04/2016 04:00PM EST";
+	bot.sendMessage(channel, helpMsgPmed);
+	bot.sendMessage(user, helpMsg);
 }
