@@ -62,7 +62,7 @@ function showInvalidCommand(channel) {
 }
 
 function showHelp(channel, user) {
-	var helpMsgPmed = "Hi, " + user.username + "! Please check your PM for information on how to use me."
+	var helpMsgPmed = "Hi, " + user.mention() + "! Please check your PM for information on how to use me."
 	var helpMsg = "Hi, I'm LD2L Bot!\n" +
 	"To schedule a match, please make a post with the following structure: \n" +
 	"!schedule <Team 1> VS <Team 2> DD/MM/YYYY HH:MM AM/PM TMZ\n" +
