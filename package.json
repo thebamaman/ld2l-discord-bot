@@ -18,6 +18,8 @@
   },
   "homepage": "https://github.com/ammuench/ld2l-discord-bot#readme",
   "dependencies": {
-    "discord.js": "^7.0.1"
+    "discord.js": "^7.0.1",
+    "google-auth-library": "^0.9.7",
+    "googleapis": "^5.1.0"
   }
 }
