@@ -49,11 +49,22 @@ bot.on('message', function (msg) {
 bot.login(AuthDetails.email, AuthDetails.password);
 
 function scheduleMatch(message, channel) {
+	lowerCaseMessage = message.toLowerCase();
+
 	var scheduleInfo = {};
-	scheduleInfo.team1 = /(?=Team 1:).+/.exec(message)[0].split('Team 1:')[1];
-	scheduleInfo.team2 = /(?=Team 2:).+/.exec(message)[0].split('Team 2:')[1];
-	scheduleInfo.time = /(?=Time:).+/.exec(message)[0].split('Time:')[1];
-	console.log(scheduleInfo.team1 + " will play " + scheduleInfo.team2 + " on " + scheduleInfo.time);
+	var regExp = /(!schedule)\s+(.+)(vs)(.+)([0-3][0-9]\/[0-1]\d\/\d\d\d\d)\s+([0-1]\d:[0-5]\d)\s*([P|A][M])\s*(\w+)\s*/gi;
+	var scheduleCommand = regExp.exec(message);
+	if (scheduleCommand) {
+		scheduleInfo.team1 = scheduleCommand[2].trim();
+		scheduleInfo.team2 = scheduleCommand[4].trim();
+		scheduleInfo.date = scheduleCommand[5];
+		scheduleInfo.time = scheduleCommand[6];
+		scheduleInfo.timePeriod = scheduleCommand[7];
+		scheduleInfo.timeZone = scheduleCommand[8];
+		bot.sendMessage(channel, JSON.stringify(scheduleInfo));
+	} else {
+		showInvalidCommand(channel);
+	}
 }
 
 function showInvalidCommand(channel) {
