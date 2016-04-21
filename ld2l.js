@@ -64,7 +64,7 @@ function scheduleMatch(message, channel) {
 		scheduleInfo.timeZone = scheduleCommand[8];
 		CalendarApi.addToGoogleCalendar(scheduleInfo);
 		var matchScheduledMessage = "Match has been scheduled for " + scheduleInfo.team1 + " vs " + scheduleInfo.team2 + " at " +
-			scheduleInfo.time + " " + scheduleInfo.timePeriod + " " + scheduleInfo.timeZone;
+			scheduleInfo.time + " " + scheduleInfo.timePeriod + " " + scheduleInfo.timeZone + " on " + scheduleInfo.date;
 		bot.sendMessage(channel, matchScheduledMessage);
 	} else {
 		showInvalidCommand(channel);
