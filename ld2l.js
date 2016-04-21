@@ -34,6 +34,9 @@ bot.on('message', function (msg) {
 	if (message.indexOf(commandPredecessor) === 0) {
 		command = message.split(" ")[0].toLowerCase().substr(1);
 		switch (command) {
+			case "add":
+				addUser(message, msg.author, msg.channel);
+				break;
 			case "schedule":
 				scheduleMatch(message, msg.channel);
 				break;
@@ -54,10 +57,27 @@ bot.on('message', function (msg) {
 bot.login(AuthDetails.email, AuthDetails.password);
 initializeUsers();
 
+function addUser(message, user, channel) {
+	if ((admins.indexOf(user.id) >= 0)) {
+		var regExp = /!add\s+(.+)\s*/gi;
+		var userName = regExp.exec(message)[1];
+
+		var userToAdd = bot.users.get("username", userName);
+		if (userToAdd) {
+			admins.push(userToAdd.id);
+			fs.writeFile('users.json', JSON.stringify({admins: admins}), function(err) {
+				if (err) {
+					console.log("Error saving users list file : " + err);
+				}
+			});
+		} else {
+			bot.sendMessage(user, "Invalid User.");
+		}
+	}
+}
+
 function scheduleMatch(message, channel) {
 	if(channel.name == "scheduling"){
-		lowerCaseMessage = message.toLowerCase();
-
 		var scheduleInfo = {};
 		var regExp = /(!schedule)\s+(Group )(.)\s+(.+)(vs)(.+)([0-3][0-9]\/[0-1]\d\/\d\d\d\d)\s+([0-1]\d:[0-5]\d)\s*([P|A][M])\s*(GMT|SGT|EDT|PDT)\s*/gi;
 		var scheduleCommand = regExp.exec(message);
@@ -105,7 +125,7 @@ function showHelp(channel, user) {
 function initializeUsers() {
 	fs.readFile('users.json', function(err, content) {
 		if (err) {
-			console.log('Error loading client secret file: ' + err);
+			console.log('Error loading user list file: ' + err);
 			return;
 		}
 		var parsedJson = JSON.parse(content);
