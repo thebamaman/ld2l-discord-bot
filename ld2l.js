@@ -54,7 +54,7 @@ function scheduleMatch(message, channel) {
 		lowerCaseMessage = message.toLowerCase();
 
 		var scheduleInfo = {};
-		var regExp = /(!schedule)\s+(Group )(.)\s+(.+)(vs)(.+)([0-3][0-9]\/[0-1]\d\/\d\d\d\d)\s+([0-1]\d:[0-5]\d)\s*([P|A][M])\s*(GMT|SGT|EDT|PDT)\s*/gi;
+		var regExp = /(!schedule)\s+(Group )(.)\s+(.+)(vs)(.+)([0-3][0-9]\/[0-1]\d\/\d\d\d\d)\s+([0-1]\d:[0-5]\d)\s*([P|A][M])\s*(GMT|SGT|EST|PST)\s*/gi;
 		var scheduleCommand = regExp.exec(message);
 		if (scheduleCommand) {
 			scheduleInfo.group = scheduleCommand[3].toUpperCase();
@@ -90,7 +90,7 @@ function showHelp(channel, user) {
 	var helpMsgPmed = "Hi, " + user.mention() + "! Please check your PM for information on how to use me."
 	var helpMsg = "Hi, I'm LD2L Bot!\n" +
 	"To schedule a match, please make a post with the following structure: \n" +
-	"!schedule GROUP <Letter> <Team 1> VS <Team 2> DD/MM/YYYY HH:MM AM/PM <EDT/PDT/SGT/GMT>\n" +
+	"!schedule GROUP <Letter> <Team 1> VS <Team 2> DD/MM/YYYY HH:MM AM/PM <EST/PST/SGT/GMT>\n" +
 	"Example: GROUP E NASOLO#1 VS NASOLO#2 25/04/2016 04:00PM EST";
 	bot.sendMessage(channel, helpMsgPmed);
 	bot.sendMessage(user, helpMsg);
