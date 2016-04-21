@@ -58,7 +58,7 @@ bot.login(AuthDetails.email, AuthDetails.password);
 initializeUsers();
 
 function addUser(message, user, channel) {
-	if ((admins.indexOf(user.id) >= 0)) {
+	if ((isUserAdmin(user)) && channel.constructor.name === "PMChannel") {
 		var regExp = /!add\s+(.+)\s*/gi;
 		var userName = regExp.exec(message)[1];
 
@@ -69,6 +69,7 @@ function addUser(message, user, channel) {
 				if (err) {
 					console.log("Error saving users list file : " + err);
 				}
+				bot.sendMessage(user, userName + " added as an admin.");
 			});
 		} else {
 			bot.sendMessage(user, "Invalid User.");
@@ -118,6 +119,10 @@ function showHelp(channel, user) {
 	"!schedule GROUP <Letter> <Team 1> VS <Team 2> DD/MM/YYYY HH:MM AM/PM <EDT/PDT/SGT/GMT>\n" +
 	"Example: GROUP E NASOLO#1 VS NASOLO#2 25/04/2016 04:00PM EDT\n\n" +
 	"To know if I recognize you, use !whoami in a PM.";
+	if (isUserAdmin(user)) {
+		helpMsg = helpMsg + "\n\n" +
+		"To add another admin use !add <user name>.\nOnly works in PM, fails silently in public channels";
+	}
 	bot.sendMessage(channel, helpMsgPmed);
 	bot.sendMessage(user, helpMsg);
 }
@@ -135,7 +140,7 @@ function initializeUsers() {
 
 function showWhoAmI(user, channel) {
 	if (channel.constructor.name === "PMChannel") {
-		if (admins.indexOf(user.id) >= 0) {
+		if (isUserAdmin(user)) {
 			bot.sendMessage(user, "You're an admin!");
 		} else {
 			bot.sendMessage(user, "I'm sorry, I don't know you.")
@@ -143,4 +148,11 @@ function showWhoAmI(user, channel) {
 	} else {
 		bot.sendMessage(user, "You can only use !whoami in a PM.")
 	}
+}
+
+function isUserAdmin(user) {
+	if (admins.indexOf(user.id) >= 0) {
+		return true;
+	}
+	return false;
 }
