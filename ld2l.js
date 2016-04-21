@@ -91,7 +91,7 @@ function showHelp(channel, user) {
 	var helpMsg = "Hi, I'm LD2L Bot!\n" +
 	"To schedule a match, please make a post with the following structure: \n" +
 	"!schedule GROUP <Letter> <Team 1> VS <Team 2> DD/MM/YYYY HH:MM AM/PM <EDT/PDT/SGT/GMT>\n" +
-	"Example: GROUP E NASOLO#1 VS NASOLO#2 25/04/2016 04:00PM EST";
+	"Example: GROUP E NASOLO#1 VS NASOLO#2 25/04/2016 04:00PM EDT";
 	bot.sendMessage(channel, helpMsgPmed);
 	bot.sendMessage(user, helpMsg);
 }
