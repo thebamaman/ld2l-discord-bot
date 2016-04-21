@@ -115,6 +115,9 @@ function callAppsScript(auth, scheduleInfo) {
   var day = date[0];
   var month = date[1];
   var year = date[2];
+  if(scheduleInfo.timeZone == "SGT"){
+    scheduleInfo.timeZone = "GMT+8";
+  }
 
   var endingTime = (parseInt(scheduleInfo.time.split(":")) + 1) + ":00";
   var startTime = monthNames[month - 1] + " " + day + ", " + year + " " + scheduleInfo.time + " " + scheduleInfo.timePeriod + " " + scheduleInfo.timeZone;
@@ -125,7 +128,7 @@ function callAppsScript(auth, scheduleInfo) {
     auth: auth,
     resource: {
       function: 'addToCalendar',
-      parameters: [scheduleInfo.team1, scheduleInfo.team2, startTime, endTime]
+      parameters: [scheduleInfo.group, scheduleInfo.team1, scheduleInfo.team2, startTime, endTime]
     },
     scriptId: scriptId
   }, function(err, resp) {

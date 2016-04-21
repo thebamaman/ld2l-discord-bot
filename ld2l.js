@@ -50,24 +50,29 @@ bot.on('message', function (msg) {
 bot.login(AuthDetails.email, AuthDetails.password);
 
 function scheduleMatch(message, channel) {
-	lowerCaseMessage = message.toLowerCase();
+	if(channel.name == "scheduling"){
+		lowerCaseMessage = message.toLowerCase();
 
-	var scheduleInfo = {};
-	var regExp = /(!schedule)\s+(.+)(vs)(.+)([0-3][0-9]\/[0-1]\d\/\d\d\d\d)\s+([0-1]\d:[0-5]\d)\s*([P|A][M])\s*(\w+)\s*/gi;
-	var scheduleCommand = regExp.exec(message);
-	if (scheduleCommand) {
-		scheduleInfo.team1 = scheduleCommand[2].trim();
-		scheduleInfo.team2 = scheduleCommand[4].trim();
-		scheduleInfo.date = scheduleCommand[5];
-		scheduleInfo.time = scheduleCommand[6];
-		scheduleInfo.timePeriod = scheduleCommand[7];
-		scheduleInfo.timeZone = scheduleCommand[8];
-		CalendarApi.addToGoogleCalendar(scheduleInfo);
-		var matchScheduledMessage = "Match has been scheduled for " + scheduleInfo.team1 + " vs " + scheduleInfo.team2 + " at " +
-			scheduleInfo.time + " " + scheduleInfo.timePeriod + " " + scheduleInfo.timeZone + " on " + scheduleInfo.date;
-		bot.sendMessage(channel, matchScheduledMessage);
-	} else {
-		showInvalidCommand(channel);
+		var scheduleInfo = {};
+		var regExp = /(!schedule)\s+(Group )(.)\s+(.+)(vs)(.+)([0-3][0-9]\/[0-1]\d\/\d\d\d\d)\s+([0-1]\d:[0-5]\d)\s*([P|A][M])\s*(GMT|SGT|EDT|PDT)\s*/gi;
+		var scheduleCommand = regExp.exec(message);
+		if (scheduleCommand) {
+			scheduleInfo.group = scheduleCommand[3].toUpperCase();
+			scheduleInfo.team1 = scheduleCommand[4].trim();
+			scheduleInfo.team2 = scheduleCommand[6].trim();
+			scheduleInfo.date = scheduleCommand[7];
+			scheduleInfo.time = scheduleCommand[8];
+			scheduleInfo.timePeriod = scheduleCommand[9];
+			scheduleInfo.timeZone = scheduleCommand[10].toUpperCase();
+			CalendarApi.addToGoogleCalendar(scheduleInfo);
+			var matchScheduledMessage = "A Group " + scheduleInfo.group + " match has been scheduled for " + scheduleInfo.team1 + " vs " + scheduleInfo.team2 + " at " +
+				scheduleInfo.time + " " + scheduleInfo.timePeriod + " " + scheduleInfo.timeZone + " on " + scheduleInfo.date;
+			bot.sendMessage(channel, matchScheduledMessage);
+		} else {
+			showInvalidEvent(channel);
+		}
+	}else{
+		bot.sendMessage(channel, "Sorry, you can't use !schedule here");
 	}
 }
 
@@ -76,12 +81,17 @@ function showInvalidCommand(channel) {
 	bot.sendMessage(channel, invalidCommandMsg);
 }
 
+function showInvalidEvent(channel) {
+	var invalidCommandMsg = "Your event format was incorrect, please try again.  If you need assistance please type '!help' in chat!"
+	bot.sendMessage(channel, invalidCommandMsg);
+}
+
 function showHelp(channel, user) {
 	var helpMsgPmed = "Hi, " + user.mention() + "! Please check your PM for information on how to use me."
 	var helpMsg = "Hi, I'm LD2L Bot!\n" +
 	"To schedule a match, please make a post with the following structure: \n" +
-	"!schedule <Team 1> VS <Team 2> DD/MM/YYYY HH:MM AM/PM TMZ\n" +
-	"Example: NASOLO#1 VS NASOLO#2 25/04/2016 04:00PM EST";
+	"!schedule GROUP <Letter> <Team 1> VS <Team 2> DD/MM/YYYY HH:MM AM/PM <EDT/PDT/SGT/GMT>\n" +
+	"Example: GROUP E NASOLO#1 VS NASOLO#2 25/04/2016 04:00PM EST";
 	bot.sendMessage(channel, helpMsgPmed);
 	bot.sendMessage(user, helpMsg);
 }
