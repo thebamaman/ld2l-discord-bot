@@ -3,6 +3,7 @@
  */
 
 //Require needs deps and auth file
+var fs = require('fs');
 var Discord = require('./node_modules/discord.js');
 var AuthDetails = require('./auth.json');
 var CalendarApi = require('./ld2lCalendarApi.js');
@@ -36,6 +37,9 @@ bot.on('message', function (msg) {
 			case "schedule":
 				scheduleMatch(message, msg.channel);
 				break;
+			case "whoami":
+				showWhoAmI(msg.author, msg.channel);
+				break;
 			case "help":
 				showHelp(msg.channel, msg.author);
 				break;
@@ -48,6 +52,7 @@ bot.on('message', function (msg) {
 
 //Login with auth.json
 bot.login(AuthDetails.email, AuthDetails.password);
+initializeUsers();
 
 function scheduleMatch(message, channel) {
 	if(channel.name == "scheduling"){
@@ -88,10 +93,34 @@ function showInvalidEvent(channel) {
 
 function showHelp(channel, user) {
 	var helpMsgPmed = "Hi, " + user.mention() + "! Please check your PM for information on how to use me."
-	var helpMsg = "Hi, I'm LD2L Bot!\n" +
+	var helpMsg = "Hi, I'm LD2L Bot!\n\n" +
 	"To schedule a match, please make a post with the following structure: \n" +
 	"!schedule GROUP <Letter> <Team 1> VS <Team 2> DD/MM/YYYY HH:MM AM/PM <EDT/PDT/SGT/GMT>\n" +
-	"Example: GROUP E NASOLO#1 VS NASOLO#2 25/04/2016 04:00PM EDT";
+	"Example: GROUP E NASOLO#1 VS NASOLO#2 25/04/2016 04:00PM EDT\n\n" +
+	"To know if I recognize you, use !whoami in a PM.";
 	bot.sendMessage(channel, helpMsgPmed);
 	bot.sendMessage(user, helpMsg);
+}
+
+function initializeUsers() {
+	fs.readFile('users.json', function(err, content) {
+		if (err) {
+			console.log('Error loading client secret file: ' + err);
+			return;
+		}
+		var parsedJson = JSON.parse(content);
+		admins = parsedJson.admins;
+	});
+}
+
+function showWhoAmI(user, channel) {
+	if (channel.constructor.name === "PMChannel") {
+		if (admins.indexOf(user.id) >= 0) {
+			bot.sendMessage(user, "You're an admin!");
+		} else {
+			bot.sendMessage(user, "I'm sorry, I don't know you.")
+		}
+	} else {
+		bot.sendMessage(user, "You can only use !whoami in a PM.")
+	}
 }
