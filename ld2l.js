@@ -147,7 +147,9 @@ function showHelp(channel, user) {
 }
 
 
-//NOTE: I don't think we need this anymore since we're reading from firebase
+/**
+ * NOTE: I don't think we need this anymore since we're reading from firebase
+ */
 // function initializeUsers() {
 // 	fs.readFile('users.json', function(err, content) {
 // 		if (err) {
