@@ -6,11 +6,28 @@
 var Discord = require('./node_modules/discord.js');
 var AuthDetails = require('./auth.json');
 var CalendarApi = require('./ld2lCalendarApi.js');
+var Firebase = require("./node_modules/firebase");
 
 var commandPredecessor = "!";
 
 //create bot
 var bot = new Discord.Client();
+
+//create dbs
+var firebaseDb = new Firebase(AuthDetails.firebaseServer);
+
+/**
+ * Queries databases and allows use of data found
+ * @param  {string}   drilldown   Path to object or value queried in relation to root DB
+ * @param  {Function} callback callback function that provides data value for object or record 
+ */
+var useDB = function(drilldown, callback){
+	firebaseDb.child(drilldown).once( 'value', function( data ){ 
+        callback(data.val());     
+    });
+}
+
+
 
 //Bot ready code
 bot.on('ready', function () {
@@ -26,9 +43,7 @@ bot.on('disconnected', function () {
 
 //Bot logic to run whenever a message is received
 bot.on('message', function (msg) {
-
 	console.log('Message from channel : ' + msg.channel.name);
-
 	message = msg.content;
 	if (message.indexOf(commandPredecessor) === 0) {
 		command = message.split(" ")[0].toLowerCase().substr(1);
