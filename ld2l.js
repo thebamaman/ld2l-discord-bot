@@ -23,7 +23,7 @@ var firebaseDb = new Firebase(AuthDetails.firebaseServer);
  * @param  {Function} callback callback function that provides data value for object or record 
  */
 var useDB = function(drilldown, callback){
-	firebaseDb.child(drilldown).once( 'value', function( data ){ 
+	firebaseDb.child(drilldown).once('value', function(data){ 
         callback(data.val());     
     });
 }
@@ -73,23 +73,28 @@ bot.login(AuthDetails.email, AuthDetails.password);
 initializeUsers();
 
 function addUser(message, user, channel) {
-	if ((isUserAdmin(user)) && channel.constructor.name === "PMChannel") {
-		var regExp = /!add\s+(.+)\s*/gi;
-		var userName = regExp.exec(message)[1];
+	useDB('users/admins', function(admins){
+		console.log(admins);
+		if ((isUserAdmin(admins, user)) && channel.constructor.name === "PMChannel") {
+			console.log('user verified as admin');
+			var regExp = /!add\s+(.+)\s*/gi;
+			var userName = regExp.exec(message)[1];
 
-		var userToAdd = bot.users.get("username", userName);
-		if (userToAdd) {
-			admins.push(userToAdd.id);
-			fs.writeFile('users.json', JSON.stringify({admins: admins}), function(err) {
-				if (err) {
-					console.log("Error saving users list file : " + err);
-				}
-				bot.sendMessage(user, userName + " added as an admin.");
-			});
-		} else {
-			bot.sendMessage(user, "Invalid User.");
+			var userToAdd = bot.users.get("username", userName);
+			if (userToAdd) {
+				var id = userToAdd.id.toString();
+				firebaseDb.child('users/admins/' + id).set({'name': userName}, function(error){
+					if(error){
+						console.log("Error saving users list file : " + err);
+					}else{
+						bot.sendMessage(user, userName + " added as an admin.");
+					}
+				});
+			} else {
+				bot.sendMessage(user, "Invalid User.");
+			}
 		}
-	}
+	});
 }
 
 function scheduleMatch(message, channel) {
@@ -165,8 +170,8 @@ function showWhoAmI(user, channel) {
 	}
 }
 
-function isUserAdmin(user) {
-	if (admins.indexOf(user.id) >= 0) {
+function isUserAdmin(admins, user) {
+	if (admins[user.id]) {
 		return true;
 	}
 	return false;
