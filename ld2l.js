@@ -70,11 +70,10 @@ bot.on('message', function (msg) {
 
 //Login with auth.json
 bot.login(AuthDetails.email, AuthDetails.password);
-initializeUsers();
+// initializeUsers();
 
 function addUser(message, user, channel) {
 	useDB('users/admins', function(admins){
-		console.log(admins);
 		if ((isUserAdmin(admins, user)) && channel.constructor.name === "PMChannel") {
 			console.log('user verified as admin');
 			var regExp = /!add\s+(.+)\s*/gi;
@@ -147,24 +146,28 @@ function showHelp(channel, user) {
 	bot.sendMessage(user, helpMsg);
 }
 
-function initializeUsers() {
-	fs.readFile('users.json', function(err, content) {
-		if (err) {
-			console.log('Error loading user list file: ' + err);
-			return;
-		}
-		var parsedJson = JSON.parse(content);
-		admins = parsedJson.admins;
-	});
-}
+
+//NOTE: I don't think we need this anymore since we're reading from firebase
+// function initializeUsers() {
+// 	fs.readFile('users.json', function(err, content) {
+// 		if (err) {
+// 			console.log('Error loading user list file: ' + err);
+// 			return;
+// 		}
+// 		var parsedJson = JSON.parse(content);
+// 		admins = parsedJson.admins;
+// 	});
+// }
 
 function showWhoAmI(user, channel) {
 	if (channel.constructor.name === "PMChannel") {
-		if (isUserAdmin(user)) {
-			bot.sendMessage(user, "You're an admin!");
-		} else {
-			bot.sendMessage(user, "I'm sorry, I don't know you.")
-		}
+		useDB('users/admins', function(admins){
+			if (isUserAdmin(admins, user)) {
+				bot.sendMessage(user, "You're an admin!");
+			} else {
+				bot.sendMessage(user, "I'm sorry, I don't know you.")
+			}
+		});
 	} else {
 		bot.sendMessage(user, "You can only use !whoami in a PM.")
 	}
