@@ -20,11 +20,11 @@ var firebaseDb = new Firebase(AuthDetails.firebaseServer);
 /**
  * Queries databases and allows use of data found
  * @param  {string}   drilldown   Path to object or value queried in relation to root DB
- * @param  {Function} callback callback function that provides data value for object or record 
+ * @param  {Function} callback callback function that provides data value for object or record
  */
 var useDB = function(drilldown, callback){
-	firebaseDb.child(drilldown).once('value', function(data){ 
-        callback(data.val());     
+	firebaseDb.child(drilldown).once('value', function(data){
+        callback(data.val());
     });
 }
 
@@ -145,21 +145,6 @@ function showHelp(channel, user) {
 	bot.sendMessage(channel, helpMsgPmed);
 	bot.sendMessage(user, helpMsg);
 }
-
-
-/**
- * NOTE: I don't think we need this anymore since we're reading from firebase
- */
-// function initializeUsers() {
-// 	fs.readFile('users.json', function(err, content) {
-// 		if (err) {
-// 			console.log('Error loading user list file: ' + err);
-// 			return;
-// 		}
-// 		var parsedJson = JSON.parse(content);
-// 		admins = parsedJson.admins;
-// 	});
-// }
 
 function showWhoAmI(user, channel) {
 	if (channel.constructor.name === "PMChannel") {
