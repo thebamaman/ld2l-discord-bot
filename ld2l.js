@@ -73,8 +73,8 @@ bot.login(AuthDetails.email, AuthDetails.password);
 // initializeUsers();
 
 function addUser(message, user, channel) {
-	useDB('users/admins', function(admins){
-		if ((isUserAdmin(admins, user)) && channel.constructor.name === "PMChannel") {
+	isUserAdmin(user, function() {
+		if (channel.constructor.name === "PMChannel") {
 			console.log('user verified as admin');
 			var regExp = /!add\s+(.+)\s*/gi;
 			var userName = regExp.exec(message)[1];
@@ -83,9 +83,9 @@ function addUser(message, user, channel) {
 			if (userToAdd) {
 				var id = userToAdd.id.toString();
 				firebaseDb.child('users/admins/' + id).set({'name': userName}, function(error){
-					if(error){
+					if (error){
 						console.log("Error saving users list file : " + err);
-					}else{
+					} else {
 						bot.sendMessage(user, userName + " added as an admin.");
 					}
 				});
@@ -97,9 +97,9 @@ function addUser(message, user, channel) {
 }
 
 function scheduleMatch(message, channel) {
-	if(channel.name == "scheduling"){
+	if (channel.name == "scheduling"){
 		var scheduleInfo = {};
-		var regExp = /(!schedule)\s+(Group )(.)\s+(.+)(vs)(.+)([0-3][0-9]\/[0-1]\d\/\d\d\d\d)\s+([0-1]\d:[0-5]\d)\s*([P|A][M])\s*(GMT|SGT|EDT|PDT)\s*/gi;
+		var regExp = /(!schedule)\s+(Group )([a-tA-T])\s+(.+)(vs)(.+)([0-3][0-9]\/[0-1]\d\/\d\d\d\d)\s+([0-1]\d:[0-5]\d)\s*([P|A][M])\s*(GMT|SGT|EDT|PDT)\s*/gi;
 		var scheduleCommand = regExp.exec(message);
 		if (scheduleCommand) {
 			scheduleInfo.group = scheduleCommand[3].toUpperCase();
@@ -138,31 +138,35 @@ function showHelp(channel, user) {
 	"!schedule GROUP <Letter> <Team 1> VS <Team 2> DD/MM/YYYY HH:MM AM/PM <EDT/PDT/SGT/GMT>\n" +
 	"Example: GROUP E NASOLO#1 VS NASOLO#2 25/04/2016 04:00PM EDT\n\n" +
 	"To know if I recognize you, use !whoami in a PM.";
-	if (isUserAdmin(user)) {
+	isUserAdmin(user, function() {
 		helpMsg = helpMsg + "\n\n" +
 		"To add another admin use !add <user name>.\nOnly works in PM, fails silently in public channels";
-	}
-	bot.sendMessage(channel, helpMsgPmed);
-	bot.sendMessage(user, helpMsg);
+		bot.sendMessage(channel, helpMsgPmed);
+		bot.sendMessage(user, helpMsg);
+	}, function() {
+		bot.sendMessage(channel, helpMsgPmed);
+		bot.sendMessage(user, helpMsg);
+	});
 }
 
 function showWhoAmI(user, channel) {
 	if (channel.constructor.name === "PMChannel") {
-		useDB('users/admins', function(admins){
-			if (isUserAdmin(admins, user)) {
-				bot.sendMessage(user, "You're an admin!");
-			} else {
-				bot.sendMessage(user, "I'm sorry, I don't know you.")
-			}
+		isUserAdmin(user, function() {
+			bot.sendMessage(user, "You're an admin!");
+		}, function() {
+			bot.sendMessage(user, "I'm sorry, I don't know you.");
 		});
 	} else {
 		bot.sendMessage(user, "You can only use !whoami in a PM.")
 	}
 }
 
-function isUserAdmin(admins, user) {
-	if (admins[user.id]) {
-		return true;
-	}
-	return false;
+function isUserAdmin(user, success, error) {
+	useDB('users/admins', function(admins){
+		if (admins[user.id]) {
+			success();
+		} else {
+			error();
+		}
+  });
 }
