@@ -44,7 +44,8 @@ bot.on('disconnected', function () {
 
 //Bot logic to run whenever a message is received
 bot.on('message', function (msg) {
-	console.log('Message from channel : ' + msg.channel.name);
+	console.log('Message from channel : ' + msg.channel.name +
+		"\n====> " + msg.author.name + ": " + msg.content);
 	message = msg.content;
 	if (message.indexOf(commandPredecessor) === 0) {
 		command = message.split(" ")[0].toLowerCase().substr(1);
@@ -54,6 +55,9 @@ bot.on('message', function (msg) {
 				break;
 			case "schedule":
 				scheduleMatch(message, msg.channel, msg.author);
+				break;
+			case "deSchedule":
+				deScheduleMatch(message, msg.channel, msg.author);
 				break;
 			case "whoami":
 				showWhoAmI(msg.author, msg.channel);
@@ -111,8 +115,14 @@ function scheduleMatch(message, channel, user) {
 			scheduleInfo.timeZone = scheduleCommand[10].toUpperCase();
 			CalendarApi.addToGoogleCalendar(scheduleInfo, function(eventID){
 				if(eventID.length > 0){
-					var userstring = user.id.toString();
-					firebaseDb.child('users/registered/' + userstring + '/events/' + eventID).set(scheduleInfo);
+					checkUser(user, 'registered', function(){
+						var userstring = user.id.toString();
+						firebaseDb.child('users/registered/' + userstring + '/events/' + eventID).set(scheduleInfo);
+					}, function(){
+						var userstring = user.id.toString();
+						firebaseDb.child('users/registered/' + userstring).set({'name': user.name});
+						firebaseDb.child('users/registered/' + userstring + '/events/' + eventID).set(scheduleInfo);
+					});
 				}
 			});
 			var matchScheduledMessage = "A Group " + scheduleInfo.group + " match has been scheduled for " + scheduleInfo.team1 + " vs " + scheduleInfo.team2 + " at " +
@@ -143,7 +153,7 @@ function showHelp(channel, user) {
 	"!schedule GROUP <Letter> <Team 1> VS <Team 2> DD/MM/YYYY HH:MM AM/PM <EDT/PDT/SGT/GMT>\n" +
 	"Example: GROUP E NASOLO#1 VS NASOLO#2 25/04/2016 04:00PM EDT\n\n" +
 	"To know if I recognize you, use !whoami in a PM.";
-	checkUser(user, function() {
+	checkUser(user, 'admins', function() {
 		helpMsg = helpMsg + "\n\n" +
 		"To add another admin use !add <user name>.\nOnly works in PM, fails silently in public channels";
 		bot.sendMessage(channel, helpMsgPmed);
