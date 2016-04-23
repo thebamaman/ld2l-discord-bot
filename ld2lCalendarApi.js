@@ -14,7 +14,7 @@ var TOKEN_PATH = TOKEN_DIR + 'ld2l-calendar-api.json';
 
 // Load client secrets from a local file.
 module.exports = {
-  addToGoogleCalendar: function(scheduleInfo) {
+  addToGoogleCalendar: function(scheduleInfo, callback) {
     fs.readFile('client_secret.json', function processClientSecrets(err, content) {
       if (err) {
         console.log('Error loading client secret file: ' + err);
@@ -22,7 +22,11 @@ module.exports = {
       }
       // Authorize a client with the loaded credentials, then call the
       // Google Apps Script Execution API.
-      authorize(JSON.parse(content), scheduleInfo, callAppsScript);
+      authorize(JSON.parse(content), scheduleInfo, function(oauth, calEvent){
+        callAppsScript(oauth, calEvent, function(eventID){
+          callback(eventID);
+        })
+      });
     });
   }
 }
@@ -107,7 +111,7 @@ function storeToken(token) {
  *
  * @param {google.auth.OAuth2} auth An authorized OAuth2 client.
  */
-function callAppsScript(auth, scheduleInfo) {
+function callAppsScript(auth, scheduleInfo, callback) {
   var scriptId = 'M11dUZp9TOMHRvOK1io6Gr2l4h4jajEHq';
   var script = google.script('v1');
 
@@ -154,6 +158,8 @@ function callAppsScript(auth, scheduleInfo) {
           console.log('\t%s: %s', trace.function, trace.lineNumber);
         }
       }
+    }else{
+      callback(resp.response.result.split("@")[0]);
     }
   });
 }

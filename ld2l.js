@@ -53,7 +53,7 @@ bot.on('message', function (msg) {
 				addUser(message, msg.author, msg.channel);
 				break;
 			case "schedule":
-				scheduleMatch(message, msg.channel);
+				scheduleMatch(message, msg.channel, msg.author);
 				break;
 			case "whoami":
 				showWhoAmI(msg.author, msg.channel);
@@ -73,7 +73,7 @@ bot.login(AuthDetails.email, AuthDetails.password);
 // initializeUsers();
 
 function addUser(message, user, channel) {
-	isUserAdmin(user, function() {
+	checkUser(user, 'admins', function() {
 		if (channel.constructor.name === "PMChannel") {
 			console.log('user verified as admin');
 			var regExp = /!add\s+(.+)\s*/gi;
@@ -96,7 +96,7 @@ function addUser(message, user, channel) {
 	});
 }
 
-function scheduleMatch(message, channel) {
+function scheduleMatch(message, channel, user) {
 	if (channel.name == "scheduling"){
 		var scheduleInfo = {};
 		var regExp = /(!schedule)\s+(Group )([a-tA-T])\s+(.+)(vs)(.+)([0-3][0-9]\/[0-1]\d\/\d\d\d\d)\s+([0-1]\d:[0-5]\d)\s*([P|A][M])\s*(GMT|SGT|EDT|PDT)\s*/gi;
@@ -109,7 +109,12 @@ function scheduleMatch(message, channel) {
 			scheduleInfo.time = scheduleCommand[8];
 			scheduleInfo.timePeriod = scheduleCommand[9];
 			scheduleInfo.timeZone = scheduleCommand[10].toUpperCase();
-			CalendarApi.addToGoogleCalendar(scheduleInfo);
+			CalendarApi.addToGoogleCalendar(scheduleInfo, function(eventID){
+				if(eventID.length > 0){
+					var userstring = user.id.toString();
+					firebaseDb.child('users/registered/' + userstring + '/events/' + eventID).set(scheduleInfo);
+				}
+			});
 			var matchScheduledMessage = "A Group " + scheduleInfo.group + " match has been scheduled for " + scheduleInfo.team1 + " vs " + scheduleInfo.team2 + " at " +
 				scheduleInfo.time + " " + scheduleInfo.timePeriod + " " + scheduleInfo.timeZone + " on " + scheduleInfo.date;
 			bot.sendMessage(channel, matchScheduledMessage);
@@ -138,7 +143,7 @@ function showHelp(channel, user) {
 	"!schedule GROUP <Letter> <Team 1> VS <Team 2> DD/MM/YYYY HH:MM AM/PM <EDT/PDT/SGT/GMT>\n" +
 	"Example: GROUP E NASOLO#1 VS NASOLO#2 25/04/2016 04:00PM EDT\n\n" +
 	"To know if I recognize you, use !whoami in a PM.";
-	isUserAdmin(user, function() {
+	checkUser(user, function() {
 		helpMsg = helpMsg + "\n\n" +
 		"To add another admin use !add <user name>.\nOnly works in PM, fails silently in public channels";
 		bot.sendMessage(channel, helpMsgPmed);
@@ -151,7 +156,7 @@ function showHelp(channel, user) {
 
 function showWhoAmI(user, channel) {
 	if (channel.constructor.name === "PMChannel") {
-		isUserAdmin(user, function() {
+		checkUser(user, 'admins', function() {
 			bot.sendMessage(user, "You're an admin!");
 		}, function() {
 			bot.sendMessage(user, "I'm sorry, I don't know you.");
@@ -161,9 +166,9 @@ function showWhoAmI(user, channel) {
 	}
 }
 
-function isUserAdmin(user, success, error) {
-	useDB('users/admins', function(admins){
-		if (admins[user.id]) {
+function checkUser(user, group, success, error) {
+	useDB('users/'+ group, function(group){
+		if (group[user.id]) {
 			success();
 		} else {
 			error();
