@@ -28,6 +28,21 @@ module.exports = {
         })
       });
     });
+  },
+  deleteFromCalendar: function(calEvent, callback) {
+    fs.readFile('client_secret.json', function processClientSecrets(err, content) {
+      if (err) {
+        console.log('Error loading client secret file: ' + err);
+        return;
+      }
+      // Authorize a client with the loaded credentials, then call the
+      // Google Apps Script Execution API.
+      authorize(JSON.parse(content), calEvent, function(oauth, calEvent){
+        deleteEvent(oauth, calEvent, function(status){
+          console.log(status);
+        })
+      });
+    });
   }
 }
 
@@ -38,7 +53,7 @@ module.exports = {
  * @param {Object} credentials The authorization client credentials.
  * @param {function} callback The callback to call with the authorized client.
  */
-function authorize(credentials, scheduleInfo, callback) {
+function authorize(credentials, passThruInfo, callback) {
   var clientSecret = credentials.installed.client_secret;
   var clientId = credentials.installed.client_id;
   var redirectUrl = credentials.installed.redirect_uris[0];
@@ -51,7 +66,7 @@ function authorize(credentials, scheduleInfo, callback) {
       getNewToken(oauth2Client, callback);
     } else {
       oauth2Client.credentials = JSON.parse(token);
-      callback(oauth2Client, scheduleInfo);
+      callback(oauth2Client, passThruInfo);
     }
   });
 }
@@ -160,6 +175,49 @@ function callAppsScript(auth, scheduleInfo, callback) {
       }
     }else{
       callback(resp.response.result.split("@")[0]);
+    }
+  });
+}
+
+function deleteEvent(auth, eventID, callback) {
+  var scriptId = 'M11dUZp9TOMHRvOK1io6Gr2l4h4jajEHq';
+  var script = google.script('v1');
+
+  var eventIDFormatted = eventID + "@google.com";
+
+  // Make the API request. The request object is included here as 'resource'.
+  script.scripts.run({
+    auth: auth,
+    resource: {
+      function: 'deleteEvent',
+      parameters: [eventIDFormatted]
+    },
+    scriptId: scriptId
+  }, function(err, resp) {
+    if (err) {
+      // The API encountered a problem before the script started executing.
+      console.log('The API returned an error: ' + err);
+      return;
+    }
+    if (resp.error) {
+      // The API executed, but the script returned an error.
+
+      // Extract the first (and only) set of error details. The values of this
+      // object are the script's 'errorMessage' and 'errorType', and an array
+      // of stack trace elements.
+      var error = resp.error.details[0];
+      console.log('Script error message: ' + error.errorMessage);
+      console.log('Script error stacktrace:');
+
+      if (error.scriptStackTraceElements) {
+        // There may not be a stacktrace if the script didn't start executing.
+        for (var i = 0; i < error.scriptStackTraceElements.length; i++) {
+          var trace = error.scriptStackTraceElements[i];
+          console.log('\t%s: %s', trace.function, trace.lineNumber);
+        }
+      }
+    }else{
+      callback("Success");
     }
   });
 }

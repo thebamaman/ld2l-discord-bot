@@ -56,8 +56,11 @@ bot.on('message', function (msg) {
 			case "schedule":
 				scheduleMatch(message, msg.channel, msg.author);
 				break;
-			case "deSchedule":
+			case "deschedule":
 				deScheduleMatch(message, msg.channel, msg.author);
+				break;
+			case "showmatches":
+				showMatches(msg.author, msg.channel);
 				break;
 			case "whoami":
 				showWhoAmI(msg.author, msg.channel);
@@ -133,6 +136,54 @@ function scheduleMatch(message, channel, user) {
 		}
 	}else{
 		bot.sendMessage(channel, "Sorry, you can't use !schedule here");
+	}
+}
+
+function deScheduleMatch(message, channel, user) {
+	if (channel.constructor.name === "PMChannel") {
+		// CalendarApi.deleteFromCalendar('mvf552qtf8uo65paumgocmt4vg');
+		checkUser(user, 'registered', function(){
+			//TODO:
+			//	Get it to check that only the ID is passed back as a parameter
+			//	Pass ID to server to remove
+			//	Remove object from user
+			var regExp = /(!schedule)\s+(Group )([a-tA-T])\s+(.+)(vs)(.+)([0-3][0-9]\/[0-1]\d\/\d\d\d\d)\s+([0-1]\d:[0-5]\d)\s*([P|A][M])\s*(GMT|SGT|EDT|PDT)\s*/gi;
+			var deScheduleID = regExp.exec(message);
+			if (deScheduleID) {
+
+			} else {
+				bot.sendMessage(user, "Sorry, that event ID is incorrect.  You can use !showMatches to see a list of your events and their event IDs")
+			}
+		},
+		function(){
+			bot.sendMessage(channel, "Sorry, I don't have any events that you can delete");
+		});
+	}else{
+		bot.sendMessage(channel, "Sorry, you can't use !deschedule here");
+	}
+}
+
+function showMatches(user, channel) {
+	if (channel.constructor.name === "PMChannel") {
+		checkUser(user, 'registered', function() {
+			var userstring = user.id.toString();
+			firebaseDb.child('users/registered/' + userstring + '/events/').once('value', function(eventObj){
+				// bot.sendMessage(user, "Here is the list of your scheduled events:");
+				var events = eventObj.val();
+				var eventKeys = Object.keys(events);
+				var eventBlock = "Here is the list of your scheduled events:\n";
+				for(var i = 0, len = eventKeys.length; i < len; i++){
+					var eventString = "";
+					eventString+= "Event ID: " + eventKeys[i] + " || " + events[eventKeys[i]].team1 + " VS " + events[eventKeys[i]].team2 + " @ " + events[eventKeys[i]].date + "\n";
+					eventBlock+= eventString;
+				}
+				bot.sendMessage(user, eventBlock);
+			});
+		}, function() {
+			bot.sendMessage(user, "I'm sorry, you're not a registered user, and therefore can't have any matches!");
+		});
+	} else {
+		bot.sendMessage(user, "You can only use !whoami in a PM.")
 	}
 }
 
