@@ -372,7 +372,6 @@ function showHelp(channel, user) {
 			bot.sendMessage(user, helpMsg);
 		}, function() {
 			//sends message without admin extras otherwise 
-			bot.sendMessage(channel, helpMsgPmed);
 			bot.sendMessage(user, helpMsg);
 		});
 	});	
