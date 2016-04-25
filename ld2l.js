@@ -362,7 +362,8 @@ function showHelp(channel, user) {
 		"Example: GROUP E NASOLO#1 VS NASOLO#2 25/04/2016 04:00PM EDT\n\n" +
 		"To know if I recognize you, use !whoami in a PM.\n\n" + 
 		"To see a list of the matches you have scheduled, use !showMatches in a PM\n\n" +
-		"To remove a match you have scheduled, type !deschedule <matchID> in a PM. Match IDs are shown in !showMatches";
+		"To remove a match you have scheduled, type !deschedule <matchID> in a PM. Match IDs are shown in !showMatches\n\n" +
+		"If there are any issues with the bot, ping @Upstairs/Downstairs, @hiemanshu, or log an issue here: https://github.com/ammuench/ld2l-discord-bot/issues";
 		//checks if user is admin, then adds additional commands
 		checkUser(user, 'admins', function() {
 			helpMsg = helpMsg + "\n\n" +
