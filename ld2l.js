@@ -173,7 +173,7 @@ function scheduleMatch(message, channel, user) {
 		if (channel.name == "scheduling"){
 			var scheduleInfo = {};
 			//match message to regex to grab groups of data for filling the scheduleInfo object
-			var regExp = /(!schedule)\s+(Group )([a-tA-T])\s+(.+)(vs)(.+)([0-3][0-9]\/[0-1]\d\/\d\d\d\d)\s+([0-1]\d:[0-5]\d)\s*([P|A][M])\s*(GMT|SGT|EDT|PDT)\s*/gi;
+			var regExp = /(!schedule)\s+(Group )([a-tA-T])\s+(.+)(vs)(.+)([0-3][0-9]\/[0-1]\d\/\d\d\d\d)\s+((01|02|03|04|05|06|07|08|09|10|11|12)(:[0-5]\d))\s*([P|A][M])\s*(GMT|SGT|EDT|PDT)\s*/gi;
 			var scheduleCommand = regExp.exec(message);
 			
 			//checks to make sure a correctly formatted schedule string was made
@@ -184,8 +184,8 @@ function scheduleMatch(message, channel, user) {
 				scheduleInfo.team2 = scheduleCommand[6].trim();
 				scheduleInfo.date = scheduleCommand[7];
 				scheduleInfo.time = scheduleCommand[8];
-				scheduleInfo.timePeriod = scheduleCommand[9];
-				scheduleInfo.timeZone = scheduleCommand[10].toUpperCase();
+				scheduleInfo.timePeriod = scheduleCommand[11];
+				scheduleInfo.timeZone = scheduleCommand[12].toUpperCase();
 				//Pushes event to google calendar
 				CalendarApi.addToGoogleCalendar(scheduleInfo, function(eventID){
 					//Checks to make sure event was successfully posted
