@@ -39,7 +39,7 @@ module.exports = {
       // Google Apps Script Execution API.
       authorize(JSON.parse(content), calEvent, function(oauth, calEvent){
         deleteEvent(oauth, calEvent, function(status){
-          console.log(status);
+          callback(status);
         })
       });
     });
@@ -216,8 +216,9 @@ function deleteEvent(auth, eventID, callback) {
           console.log('\t%s: %s', trace.function, trace.lineNumber);
         }
       }
+      callback({status: "Error", message: error.errorMessage});
     }else{
-      callback("Success");
+      callback({status: "Success", message: "Your event has been removed"});
     }
   });
 }
