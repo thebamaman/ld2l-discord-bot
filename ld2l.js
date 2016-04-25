@@ -277,7 +277,11 @@ function showWhoAmI(user, channel) {
 			checkUser(user, 'admins', function() {
 				bot.sendMessage(user, "You're an admin!");
 			}, function() {
-				bot.sendMessage(user, "I'm sorry, I don't know you.");
+				checkUser(user, 'registered', function() {
+					bot.sendMessage(user, "You're a registered user!");
+				}, function(){
+					bot.sendMessage(user, "I don't know who you are yet...")
+				});
 			});
 		} else {
 			bot.sendMessage(user, "You can only use !whoami in a PM.")
