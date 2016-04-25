@@ -2,3 +2,4 @@ auth.json
 client_secret.json
 users.json
 /node_modules/
+npm-debug.log
