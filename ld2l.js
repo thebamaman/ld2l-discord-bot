@@ -1,7 +1,7 @@
 /**
  * LD2L Bot: A discord bot for LD2L
  * Made with love and care so that we can properly schedule things in LD2L
- * @version 1.1
+ * @version 1.1.1
  * @author Alex Muench (Upstairs/Downstairs), Hiemanshu Sharma (hiemanshu)
  */
 
@@ -434,42 +434,48 @@ function findMatches(message, user, channel) {
 			if (channel.constructor.name === "PMChannel") {
 				// match for username
 				var regExp = /!findmatches\s+(.+)\s*/gi;
-				var userName = regExp.exec(message)[1];
+				var match = regExp.exec(message);
 
-				//find user on server
-				var userWithMatches = bot.users.get("username", userName);
+				if(match){
+					var userName = regExp.exec(message)[1];
 
-				//if user exists on server, continue
-				if (userWithMatches) {
-					var userstring = userWithMatches.id.toString();
-					checkUser(userWithMatches, 'registered', function(){
-						useDB('users/registered/' + userstring, function(info){
-							if(info['events']){
-								//gets list of events if they exist
-								firebaseDb.child('users/registered/' + userstring + '/events/').once('value', function(eventObj){
-									var events = eventObj.val();
-									var eventKeys = Object.keys(events);
-									var eventBlock = "Here is a list of " + userWithMatches.name + "'s scheduled events:\n";
-									//creates string from list of events in object
-									for(var i = 0, len = eventKeys.length; i < len; i++){
-										var eventString = "";
-										eventString+= "Event ID: **" + eventKeys[i] + "** || " + events[eventKeys[i]].team1 + " VS " + events[eventKeys[i]].team2 + " @ " + events[eventKeys[i]].date + "\n";
-										eventBlock+= eventString;
-									}
-									//sends message to user with events
-									bot.sendMessage(user, eventBlock);
-								});
-							}else{
-								//sends message if user has no events
-								bot.sendMessage(user, "This user has not scheduled any matches");
-							}
+					//find user on server
+					var userWithMatches = bot.users.get("username", userName);
+
+					//if user exists on server, continue
+					if (userWithMatches) {
+						var userstring = userWithMatches.id.toString();
+						checkUser(userWithMatches, 'registered', function(){
+							useDB('users/registered/' + userstring, function(info){
+								if(info['events']){
+									//gets list of events if they exist
+									firebaseDb.child('users/registered/' + userstring + '/events/').once('value', function(eventObj){
+										var events = eventObj.val();
+										var eventKeys = Object.keys(events);
+										var eventBlock = "Here is a list of " + userWithMatches.name + "'s scheduled events:\n";
+										//creates string from list of events in object
+										for(var i = 0, len = eventKeys.length; i < len; i++){
+											var eventString = "";
+											eventString+= "Event ID: **" + eventKeys[i] + "** || " + events[eventKeys[i]].team1 + " VS " + events[eventKeys[i]].team2 + " @ " + events[eventKeys[i]].date + "\n";
+											eventBlock+= eventString;
+										}
+										//sends message to user with events
+										bot.sendMessage(user, eventBlock);
+									});
+								}else{
+									//sends message if user has no events
+									bot.sendMessage(user, "This user has not scheduled any matches");
+								}
+							});
+						},function(){
+							bot.sendMessage(user, "User is not registered yet, and therefore can't have any matches scheduled")
 						});
-					},function(){
-						bot.sendMessage(user, "User is not registered yet, and therefore can't have any matches scheduled")
-					});
-				} else {
-					//respond with help if user doesn't exist
-					bot.sendMessage(user, "User does not exist.  Name must match exactly, and is case sensitive");
+					} else {
+						//respond with help if user doesn't exist
+						bot.sendMessage(user, "User does not exist.  Name must match exactly, and is case sensitive");
+					}
+				}else{
+					bot.sendMessage(user, "You forgot to include a user name");
 				}
 			}
 		});
