@@ -61,8 +61,14 @@ bot.on('message', function (msg) {
 		command = message.split(" ")[0].toLowerCase().substr(1);
 		//switch statement for matching commands
 		switch (command) {
-			case "add":
-				addUser(message, msg.author, msg.channel);
+			case "addadmin":
+				addAdmin(message, msg.author, msg.channel);
+				break;
+			case "addcaster":
+				addCaster(message, msg.author, msg.channel);
+				break;
+			case "setcasters":
+				setCasters(message, msg.author, msg.channel);
 				break;
 			case "schedule":
 				scheduleMatch(message, msg.channel, msg.author);
@@ -93,11 +99,11 @@ bot.on('message', function (msg) {
 
 /**
  * Adds user to admin list
- * @param {object} message Discord Message Object
- * @param {object} user    Discord User Object
- * @param {object} channel Discord Channel Object
+ * @param {object} message Message that prompted command
+ * @param {object} user    User that wrote message
+ * @param {object} channel Channel that message came from
  */
-function addUser(message, user, channel) {
+function addAdmin(message, user, channel) {
 	//checks to make sure user is admin
 	checkUser(user, 'admins', function() {
 		//checks to make sure message was sent via PM
@@ -126,12 +132,49 @@ function addUser(message, user, channel) {
 	});
 }
 
+/**
+ * Adds user to caster list
+ * @param {object} message Message that prompted command
+ * @param {object} user    User that wrote message
+ * @param {object} channel Channel that message came from
+ */
+function addCaster(message, user, channel) {
+	//checks to make sure user is admin
+	checkUser(user, 'admins', function() {
+		//checks to make sure message was sent via PM
+		if (channel.constructor.name === "PMChannel") {
+			// match for username
+			var regExp = /!addcaster\s+(.+)\s*/gi;
+			var userName = regExp.exec(message)[1];
+
+			//find user on server
+			var userToAdd = bot.users.get("username", userName);
+
+			//if user exists, add him to caster db
+			if (userToAdd) {
+				var id = userToAdd.id.toString();
+				firebaseDb.child('users/casters/' + id).set({'name': userName}, function(error){
+					if (error){
+						console.log("Error saving users to DB : " + err);
+						bot.sendMessage(user, "There was an error adding your user, please try again or contact a dev");
+					} else {
+						//consfirm on success
+						bot.sendMessage(user, userName + " added to caster group.");
+					}
+				});
+			} else {
+				bot.sendMessage(user, "User does not exist.  Name must match exactly, and is case sensitive");
+			}
+		}
+	});
+}
+
 
 /**
  * Toggles bot on/off
- * @param {object} message Discord Message Object
- * @param {object} user    Discord User Object
- * @param {object} channel Discord Channel Object
+ * @param {object} message Message that prompted command
+ * @param {object} user    User that wrote message
+ * @param {object} channel Channel that message came from
  */
 function toggleBot(message, channel, user){
 	if (channel.constructor.name === "PMChannel") {
@@ -156,7 +199,6 @@ function toggleBot(message, channel, user){
 function isBotOn(success) {
 	firebaseDb.child('allowBot').once('value', function(bool){
 		if(bool.val()){
-			console.log('bot on');
 			success();
 		}
 		//fail silently if bot is off
@@ -165,9 +207,9 @@ function isBotOn(success) {
 
 /**
  * Creates a match on the google calendar
- * @param {object} message Discord Message Object
- * @param {object} user    Discord User Object
- * @param {object} channel Discord Channel Object
+ * @param {object} message Message that prompted command
+ * @param {object} user    User that wrote message
+ * @param {object} channel Channel that message came from
  */
 function scheduleMatch(message, channel, user) {
 	//checks if bot is on
@@ -205,12 +247,16 @@ function scheduleMatch(message, channel, user) {
 							//adds event to user's event object
 							firebaseDb.child('users/registered/' + userstring + '/events/' + eventID).set(scheduleInfo);
 						});
+					
+						var matchScheduledMessage = "A Group " + scheduleInfo.group + " match has been scheduled for " + scheduleInfo.team1 + " vs " + scheduleInfo.team2 + " at " +
+							scheduleInfo.time + " " + scheduleInfo.timePeriod + " " + scheduleInfo.timeZone + " on " + scheduleInfo.date;
+						//sends message to user letting him know his match is scheduled
+						bot.sendMessage(channel, matchScheduledMessage);
+					}else{
+						bot.sendMessage(channel, "There was an error sending your match to server, please try again a bit later");
 					}
 				});
-				var matchScheduledMessage = "A Group " + scheduleInfo.group + " match has been scheduled for " + scheduleInfo.team1 + " vs " + scheduleInfo.team2 + " at " +
-					scheduleInfo.time + " " + scheduleInfo.timePeriod + " " + scheduleInfo.timeZone + " on " + scheduleInfo.date;
-				//sends message to user letting him know his match is scheduled
-				bot.sendMessage(channel, matchScheduledMessage);
+				
 			} else {
 				//sends message to user if his eventstring is formatted incorrectly
 				showInvalidEvent(channel);
@@ -225,9 +271,9 @@ function scheduleMatch(message, channel, user) {
 
 /**
  * Removes a match from the google calendar
- * @param {object} message Discord Message Object
- * @param {object} user    Discord User Object
- * @param {object} channel Discord Channel Object
+ * @param {object} message Message that prompted command
+ * @param {object} user    User that wrote message
+ * @param {object} channel Channel that message came from
  */
 function deScheduleMatch(message, channel, user) {
 	//checks if bot is on
@@ -280,8 +326,8 @@ function deScheduleMatch(message, channel, user) {
 
 /**
  * Shows all matches that a user has created
- * @param {object} user    Discord User Object
- * @param {object} channel Discord Channel Object
+ * @param {object} user    User that wrote message
+ * @param {object} channel Channel that message came from
  */
 function showMatches(user, channel) {
 	//checks if bot is on
@@ -322,20 +368,66 @@ function showMatches(user, channel) {
 			//sends message to user if they use command outside of PM
 			bot.sendMessage(user, "You can only use !showMatches in a PM.");
 		}
+	});	
+}
+
+/**
+ * Sets casters for a scheduled match
+ * @param {object} message Message that prompted command
+ * @param {object} user    User that wrote message
+ * @param {object} channel Channel that message came from
+ */
+function setCasters(message, user, channel) {
+	//checks if bot is on
+	isBotOn(function(){
+		//checks to make sure command was sent via PM
+		if (channel.constructor.name === "PMChannel") {
+			//checks to make sure user is a caster
+			checkUser(user, 'casters', function() {
+				var regExp = /!setcasters\s+(.+)(:)\s(.+)/gi;
+				var match = regExp.exec(message);
+				if(match){
+					//we use an array to pass all the data in one object
+					var casterArray = []
+					//gets match ID
+					casterArray.push(match[1]);
+					//gets users (separates each by new line)
+					casterArray.push("This game is being cast by: \n" + match[3].split(" ").join("\n"));
+					CalendarApi.setCaster(casterArray, function(status){
+						if(status.status == "Success"){
+							//let user know they added casters
+							bot.sendMessage(user, "You have successfully added casters to a match!");
+						}else{
+							bot.sendMessage(user, "Error occurred while adding casters: \n" + status.message);
+						}
+					});
+				}else{
+					//sends message to user if they're not registered
+					bot.sendMessage(user, "I'm sorry, your format is incorrect. Please type '!help' if you need assistance");
+				}
+				
+			}, function() {
+				//sends message to user if they're not registered
+				bot.sendMessage(user, "I'm sorry, only admin casters can user this command");
+			});
+		} else {
+			//sends message to user if they use command outside of PM
+			bot.sendMessage(user, "You can't use !setCasters");
+		}
 	});
 	
 }
 
 /**
  * Finds all matches that a specific user has created
- * @param {object} user    Discord User Object
- * @param {object} channel Discord Channel Object
+ * @param {object} user    User that wrote message
+ * @param {object} channel Channel that message came from
  */
 function findMatches(message, user, channel) {
 	//checks if bot is on
 	isBotOn(function(){
-		//checks to make sure user is admin
-		checkUser(user, 'admins', function() {
+		//checks to make sure user is caster
+		checkUser(user, 'casters', function() {
 			//checks to make sure message was sent via PM
 			if (channel.constructor.name === "PMChannel") {
 				// match for username
@@ -345,7 +437,7 @@ function findMatches(message, user, channel) {
 				//find user on server
 				var userWithMatches = bot.users.get("username", userName);
 
-				//if user exists, add him to Admin db
+				//if user exists on server, continue
 				if (userWithMatches) {
 					var userstring = userWithMatches.id.toString();
 					checkUser(userWithMatches, 'registered', function(){
@@ -374,6 +466,7 @@ function findMatches(message, user, channel) {
 						bot.sendMessage(user, "User is not registered yet, and therefore can't have any matches scheduled")
 					});
 				} else {
+					//respond with help if user doesn't exist
 					bot.sendMessage(user, "User does not exist.  Name must match exactly, and is case sensitive");
 				}
 			}
@@ -384,7 +477,7 @@ function findMatches(message, user, channel) {
 
 /**
  * Sends message if invalid command is issued in server
- * @param {object} channel Discord Channel Object
+ * @param {object} channel Channel that message came from
  */
 function showInvalidCommand(channel) {
 	//checks to make sure bot is on
@@ -398,7 +491,7 @@ function showInvalidCommand(channel) {
 
 /**
  * Sends message if invalid event format is passed in a !schedule command
- * @param {object} channel Discord Channel Object
+ * @param {object} channel Channel that message came from
  */
 function showInvalidEvent(channel) {
 	var invalidCommandMsg = "Your event format was incorrect, please try again.  If you need assistance please type '!help' in chat!"
@@ -407,8 +500,8 @@ function showInvalidEvent(channel) {
 
 /**
  * Sends PM with basic commands and help to user
- * @param {object} channel Discord Channel Object
- * @param {object} user    Discord User Object
+ * @param {object} channel Channel that message came from
+ * @param {object} user    User that wrote message
  */
 function showHelp(channel, user) {
 	//makes sure bot is on
@@ -438,8 +531,8 @@ function showHelp(channel, user) {
 
 /**
  * Tells a user who they are via PM
- * @param {object} user    Discord User Object
- * @param {object} channel Discord Channel Object
+ * @param {object} user    User that wrote message
+ * @param {object} channel Channel that message came from
  */
 function showWhoAmI(user, channel) {
 	//checks to make sure bot is on
@@ -450,12 +543,17 @@ function showWhoAmI(user, channel) {
 			checkUser(user, 'admins', function() {
 				bot.sendMessage(user, "You're an admin!");
 			}, function() {
-				//if not admin, checks if they're a registerd user
-				checkUser(user, 'registered', function() {
-					bot.sendMessage(user, "You're a registered user!");
+				//if not admin, checks if they're a caster
+				checkUser(user, 'caster', function() {
+					bot.sendMessage(user, "You're a caster-admin!!");
 				}, function(){
-					//if not admin or registered user, respond that you don't know who they are
-					bot.sendMessage(user, "I don't know who you are yet...")
+					//if not caster or admin, checks if they're a registered user
+					checkUser(user, 'registered', function() {
+						bot.sendMessage(user, "You're a registered user!");
+					}, function(){
+						//if not admin or registered user, respond that you don't know who they are
+						bot.sendMessage(user, "I don't know who you are yet...")
+					});
 				});
 			});
 		} else {
@@ -467,7 +565,7 @@ function showWhoAmI(user, channel) {
 
 /**
  * Checks to see if a user is a member of a specific group
- * @param  {object} user    Discord User Object
+ * @param  {object} user    User that wrote message
  * @param  {string} group   Name of group that the user is being checked against
  * @param  {[type]} success Callback function run if the user is a member of the group they're checked against
  * @param  {[type]} error   Callback function run if the user is NOT a member of the group they're checked against

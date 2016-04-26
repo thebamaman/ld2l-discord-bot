@@ -15,3 +15,10 @@ function deleteEvent(eventID) {
   event = calendar.getEventSeriesById(eventID);
   event.deleteEventSeries();  
 }
+
+function setCaster(eventID, casters) {
+  calendar = getCalendar();
+  event = calendar.getEventSeriesById(eventID);
+  event.setDescription(casters);
+  return(event.getDescription());  
+}
