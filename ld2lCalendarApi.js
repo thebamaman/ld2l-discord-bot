@@ -2,10 +2,8 @@ var fs = require('fs');
 var readline = require('readline');
 var google = require('googleapis');
 var googleAuth = require('google-auth-library');
-
-var monthNames = ["January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December"
-];
+var moment = require('moment');
+moment().format();
 
 var SCOPES = ['https://www.googleapis.com/auth/calendar', 'https://www.google.com/calendar/feeds'];
 var TOKEN_DIR = (process.env.HOME || process.env.HOMEPATH ||
@@ -145,17 +143,15 @@ function callAppsScript(auth, scheduleInfo, callback) {
   var scriptId = 'M11dUZp9TOMHRvOK1io6Gr2l4h4jajEHq';
   var script = google.script('v1');
 
-  var date = scheduleInfo.date.split("/");
-  var day = date[0];
-  var month = date[1];
-  var year = date[2];
   if(scheduleInfo.timeZone == "SGT"){
     scheduleInfo.timeZone = "GMT+8";
   }
 
-  var endingTime = (parseInt(scheduleInfo.time.split(":")) + 1) + ":00";
-  var startTime = monthNames[month - 1] + " " + day + ", " + year + " " + scheduleInfo.time + " " + scheduleInfo.timePeriod + " " + scheduleInfo.timeZone;
-  var endTime = monthNames[month - 1] + " " + day + ", " + year + " " + endingTime + " " + scheduleInfo.timePeriod + " " + scheduleInfo.timeZone;
+  var startingTime = moment(scheduleInfo.date + " " + scheduleInfo.time + " " + scheduleInfo.timePeriod, "DD/MM/YYYY hh:mm a");
+  var startTime = startingTime.format("MMMM DD YYYY hh:mm a") + " " + scheduleInfo.timeZone;
+
+  var endingTime = startingTime.add(2, 'hours');
+  var endTime = endingTime.format("MMMM DD YYYY hh:mm a") + " " + scheduleInfo.timeZone;
 
   // Make the API request. The request object is included here as 'resource'.
   script.scripts.run({
