@@ -145,25 +145,30 @@ function addCaster(message, user, channel) {
 		if (channel.constructor.name === "PMChannel") {
 			// match for username
 			var regExp = /!addcaster\s+(.+)\s*/gi;
-			var userName = regExp.exec(message)[1];
+			var match = regExp.exec(message);
+			if(match){
+				var userName = regExp.exec(message)[1];
 
-			//find user on server
-			var userToAdd = bot.users.get("username", userName);
+				//find user on server
+				var userToAdd = bot.users.get("username", userName);
 
-			//if user exists, add him to caster db
-			if (userToAdd) {
-				var id = userToAdd.id.toString();
-				firebaseDb.child('users/casters/' + id).set({'name': userName}, function(error){
-					if (error){
-						console.log("Error saving users to DB : " + err);
-						bot.sendMessage(user, "There was an error adding your user, please try again or contact a dev");
-					} else {
-						//consfirm on success
-						bot.sendMessage(user, userName + " added to caster group.");
-					}
-				});
-			} else {
-				bot.sendMessage(user, "User does not exist.  Name must match exactly, and is case sensitive");
+				//if user exists, add him to caster db
+				if (userToAdd) {
+					var id = userToAdd.id.toString();
+					firebaseDb.child('users/casters/' + id).set({'name': userName}, function(error){
+						if (error){
+							console.log("Error saving users to DB : " + err);
+							bot.sendMessage(user, "There was an error adding your user, please try again or contact a dev");
+						} else {
+							//consfirm on success
+							bot.sendMessage(user, userName + " added to caster group.");
+						}
+					});
+				} else {
+					bot.sendMessage(user, "User does not exist.  Name must match exactly, and is case sensitive");
+				}
+			}else{
+				bot.sendMessage(user, "You forgot to include a username");
 			}
 		}
 	});
