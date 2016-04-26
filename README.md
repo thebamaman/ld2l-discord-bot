@@ -20,12 +20,16 @@ Shows you a list of matches that you have scheduled, along with their unique IDs
     !deschedule <matchID>
 Removes the specified match from the calendar.  Good for if you screw something up or need to reschedule.  Only usable via PM
 
+    !findMatches <userName>
+Casters only!  Shows you a list of matches that a user has scheduled, along with their unique IDs.  Only usable via PM
+
+    !setCasters <matchID>: <casternames separated by spaces>
+Casters only!  Adds casters to the specified match from the calendar.  Will overwrite existing casters everytime its used, so please list all names in one go.  Only usable via PM
+
 ## Future Features List: ##
 LD2L Bot has been scrapped together in free time over the past week just to get it to serve up some basic functionality.  But more is coming!  The following features are planned to be integrated in the next few weeks:
 
 - Duplicate match check: If there is a match with the same two teams within 7 days, it'll block the match until it's deleted
-
-- Caster assignment to scheduled matches
 
 - Allowing casters to host their streams on the LD2L Twitch Channel
 

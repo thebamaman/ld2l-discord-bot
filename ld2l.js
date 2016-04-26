@@ -1,7 +1,7 @@
 /**
  * LD2L Bot: A discord bot for LD2L
  * Made with love and care so that we can properly schedule things in LD2L
- * @version 1.0.1
+ * @version 1.1
  * @author Alex Muench (Upstairs/Downstairs), Hiemanshu Sharma (hiemanshu)
  */
 
@@ -512,20 +512,28 @@ function showHelp(channel, user) {
 		var helpMsgPmed = "Hi, " + user.mention() + "! Please check your PM for information on how to use me."
 		var helpMsg = "Hi, I'm LD2L Bot!\n\n" +
 		"To schedule a match, please make a post with the following structure: \n" +
-		"!schedule GROUP <Letter> <Team 1> VS <Team 2> DD/MM/YYYY HH:MM AM/PM <EDT/PDT/SGT/GMT>\n" +
+		"*!schedule GROUP <Letter> <Team 1> VS <Team 2> DD/MM/YYYY HH:MM AM/PM <EDT/PDT/SGT/GMT>*\n" +
 		"Example: GROUP E NASOLO#1 VS NASOLO#2 25/04/2016 04:00PM EDT\n\n" +
-		"To know if I recognize you, use !whoami in a PM.\n\n" + 
-		"To see a list of the matches you have scheduled, use !showMatches in a PM\n\n" +
-		"To remove a match you have scheduled, type !deschedule <matchID> in a PM. Match IDs are shown in !showMatches\n\n" +
-		"If there are any issues with the bot, ping @Upstairs/Downstairs, @hiemanshu, or log an issue here: https://github.com/ammuench/ld2l-discord-bot/issues";
+		"To know if I recognize you, use *!whoami* in a PM.\n\n" + 
+		"To see a list of the matches you have scheduled, use *!showMatches* in a PM\n\n" +
+		"To remove a match you have scheduled, type *!deschedule <matchID>* in a PM. Match IDs are shown in !showMatches\n\n" +
+		"If there are any issues with the bot, ping @Upstairs/Downstairs, @hiemanshu, or log an issue here: https://github.com/ammuench/ld2l-discord-bot/issues\n\n";
 		//checks if user is admin, then adds additional commands
+		checkUser(user, 'casters', function() {
+			helpMsg = helpMsg  +
+			"To see another users scheduled matches (with matchIDs) use !findMatches <user name>.\nOnly works in PM.\n\n"+
+			"To set casters for an event, use *!setCasters <matchID>: <Names of casters separated by space>*.\n**Every time you use setCasters it will overwrite the previous casters for that event**. Only works in PM\n\n";
+		}, function() {
+			//do
+		});
 		checkUser(user, 'admins', function() {
-			helpMsg = helpMsg + "\n\n" +
-			"To add another admin use !add <user name>.\nOnly works in PM, fails silently in public channels";
+			helpMsg = helpMsg +
+			"To add another admin use !add <user name>.\nOnly works in PM, fails silently in public channels\n\n";
 			bot.sendMessage(channel, helpMsgPmed);
 			bot.sendMessage(user, helpMsg);
 		}, function() {
-			//sends message without admin extras otherwise 
+			//sends message without admin extras otherwise
+			bot.sendMessage(channel, helpMsgPmed);
 			bot.sendMessage(user, helpMsg);
 		});
 	});	
@@ -546,7 +554,7 @@ function showWhoAmI(user, channel) {
 				bot.sendMessage(user, "You're an admin!");
 			}, function() {
 				//if not admin, checks if they're a caster
-				checkUser(user, 'caster', function() {
+				checkUser(user, 'casters', function() {
 					bot.sendMessage(user, "You're a caster-admin!!");
 				}, function(){
 					//if not caster or admin, checks if they're a registered user
