@@ -348,7 +348,9 @@ function showMatches(user, channel) {
 							//creates string from list of events in object
 							for(var i = 0, len = eventKeys.length; i < len; i++){
 								var eventString = "";
-								eventString+= "Event ID: " + eventKeys[i] + " || " + events[eventKeys[i]].team1 + " VS " + events[eventKeys[i]].team2 + " @ " + events[eventKeys[i]].date + "\n";
+								eventString+= "Event ID: " + eventKeys[i] + " || " + events[eventKeys[i]].team1 + " VS " + events[eventKeys[i]].team2 +
+									" @ " + events[eventKeys[i]].date + " " + events[eventKeys[i]].time + " " + events[eventKeys[i]].timePeriod + " " +
+									events[eventKeys[i]].timeZone + "\n";
 								eventBlock+= eventString;
 							}
 							//sends message to user with events
