@@ -73,6 +73,9 @@ bot.on('message', function (msg) {
 			case "showmatches":
 				showMatches(msg.author, msg.channel);
 				break;
+			case "findmatches":
+				findMatches(message, msg.author, msg.channel);
+				break;
 			case "whoami":
 				showWhoAmI(msg.author, msg.channel);
 				break;
@@ -117,7 +120,7 @@ function addUser(message, user, channel) {
 					}
 				});
 			} else {
-				bot.sendMessage(user, "Invalid User.");
+				bot.sendMessage(user, "User does not exist.  Name must match exactly, and is case sensitive");
 			}
 		}
 	});
@@ -173,7 +176,7 @@ function scheduleMatch(message, channel, user) {
 		if (channel.name == "scheduling"){
 			var scheduleInfo = {};
 			//match message to regex to grab groups of data for filling the scheduleInfo object
-			var regExp = /(!schedule)\s+(Group )([a-tA-T])\s+(.+)(vs)(.+)([0-3][0-9]\/[0-1]\d\/\d\d\d\d)\s+([0-1]\d:[0-5]\d)\s*([P|A][M])\s*(GMT|SGT|EDT|PDT)\s*/gi;
+			var regExp = /(!schedule)\s+(Group )([a-tA-T])\s+(.+)(vs)(.+)([0-3][0-9]\/[0-1]\d\/\d\d\d\d)\s+((01|02|03|04|05|06|07|08|09|10|11|12)(:[0-5]\d))\s*([P|A][M])\s*(GMT|SGT|EDT|PDT)\s*/gi;
 			var scheduleCommand = regExp.exec(message);
 			
 			//checks to make sure a correctly formatted schedule string was made
@@ -184,8 +187,8 @@ function scheduleMatch(message, channel, user) {
 				scheduleInfo.team2 = scheduleCommand[6].trim();
 				scheduleInfo.date = scheduleCommand[7];
 				scheduleInfo.time = scheduleCommand[8];
-				scheduleInfo.timePeriod = scheduleCommand[9];
-				scheduleInfo.timeZone = scheduleCommand[10].toUpperCase();
+				scheduleInfo.timePeriod = scheduleCommand[11];
+				scheduleInfo.timeZone = scheduleCommand[12].toUpperCase();
 				//Pushes event to google calendar
 				CalendarApi.addToGoogleCalendar(scheduleInfo, function(eventID){
 					//Checks to make sure event was successfully posted
@@ -319,6 +322,62 @@ function showMatches(user, channel) {
 			//sends message to user if they use command outside of PM
 			bot.sendMessage(user, "You can only use !showMatches in a PM.");
 		}
+	});
+	
+}
+
+/**
+ * Finds all matches that a specific user has created
+ * @param {object} user    Discord User Object
+ * @param {object} channel Discord Channel Object
+ */
+function findMatches(message, user, channel) {
+	//checks if bot is on
+	isBotOn(function(){
+		//checks to make sure user is admin
+		checkUser(user, 'admins', function() {
+			//checks to make sure message was sent via PM
+			if (channel.constructor.name === "PMChannel") {
+				// match for username
+				var regExp = /!findmatches\s+(.+)\s*/gi;
+				var userName = regExp.exec(message)[1];
+
+				//find user on server
+				var userWithMatches = bot.users.get("username", userName);
+
+				//if user exists, add him to Admin db
+				if (userWithMatches) {
+					var userstring = userWithMatches.id.toString();
+					checkUser(userWithMatches, 'registered', function(){
+						useDB('users/registered/' + userstring, function(info){
+							if(info['events']){
+								//gets list of events if they exist
+								firebaseDb.child('users/registered/' + userstring + '/events/').once('value', function(eventObj){
+									var events = eventObj.val();
+									var eventKeys = Object.keys(events);
+									var eventBlock = "Here is a list of " + userWithMatches.name + "'s scheduled events:\n";
+									//creates string from list of events in object
+									for(var i = 0, len = eventKeys.length; i < len; i++){
+										var eventString = "";
+										eventString+= "Event ID: **" + eventKeys[i] + "** || " + events[eventKeys[i]].team1 + " VS " + events[eventKeys[i]].team2 + " @ " + events[eventKeys[i]].date + "\n";
+										eventBlock+= eventString;
+									}
+									//sends message to user with events
+									bot.sendMessage(user, eventBlock);
+								});
+							}else{
+								//sends message if user has no events
+								bot.sendMessage(user, "This user has not scheduled any matches");
+							}
+						});
+					},function(){
+						bot.sendMessage(user, "User is not registered yet, and therefore can't have any matches scheduled")
+					});
+				} else {
+					bot.sendMessage(user, "User does not exist.  Name must match exactly, and is case sensitive");
+				}
+			}
+		});
 	});
 	
 }
