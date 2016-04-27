@@ -6,6 +6,13 @@ A Discord Bot to help run and streamline services within the Learn Dota 2 League
 LD2L Bot is a bot that sits in the official LD2L Discord server and runs some very helpful services to try to keep things running smoothly for the league.
 
 ##What's New?##
+	v1.1.3
+	-!schedule will now accept single-digit hours without a zero (now 9:00 PM and 09:00 PM will both work)
+
+	v1.1.1, 1.1.2
+	-some quick hotfixes to prevent crashing (*thanks @jasus*)
+
+
     v1.1
     - Bot now creates 2 hour matches by default
     - Fixed issue where users could schedule matches using 24-hour time

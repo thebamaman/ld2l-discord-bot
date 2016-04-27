@@ -1,7 +1,7 @@
 /**
  * LD2L Bot: A discord bot for LD2L
  * Made with love and care so that we can properly schedule things in LD2L
- * @version 1.1.2
+ * @version 1.1.3
  * @author Alex Muench (Upstairs/Downstairs), Hiemanshu Sharma (hiemanshu)
  */
 
