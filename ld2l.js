@@ -1,7 +1,7 @@
 /**
  * LD2L Bot: A discord bot for LD2L
  * Made with love and care so that we can properly schedule things in LD2L
- * @version 1.1.1
+ * @version 1.1.2
  * @author Alex Muench (Upstairs/Downstairs), Hiemanshu Sharma (hiemanshu)
  */
 
@@ -144,10 +144,11 @@ function addCaster(message, user, channel) {
 		//checks to make sure message was sent via PM
 		if (channel.constructor.name === "PMChannel") {
 			// match for username
-			var regExp = /!addcaster\s+(.+)\s*/gi;
+			var regExp = /!addcaster\s+(.+)/gi;
 			var match = regExp.exec(message);
+			console.log(match);
 			if(match){
-				var userName = regExp.exec(message)[1];
+				var userName = match[1];
 
 				//find user on server
 				var userToAdd = bot.users.get("username", userName);
@@ -438,11 +439,12 @@ function findMatches(message, user, channel) {
 			//checks to make sure message was sent via PM
 			if (channel.constructor.name === "PMChannel") {
 				// match for username
-				var regExp = /!findmatches\s+(.+)\s*/gi;
+				var regExp = /!findmatches\s+(.+)/gi;
 				var match = regExp.exec(message);
+				console.log(match);
 
 				if(match){
-					var userName = regExp.exec(message)[1];
+					var userName = match[1];
 
 					//find user on server
 					var userWithMatches = bot.users.get("username", userName);
