@@ -1,7 +1,7 @@
 /**
  * LD2L Bot: A discord bot for LD2L
  * Made with love and care so that we can properly schedule things in LD2L
- * @version 1.1.3
+ * @version 1.1.4
  * @author Alex Muench (Upstairs/Downstairs), Hiemanshu Sharma (hiemanshu)
  */
 
@@ -485,6 +485,8 @@ function findMatches(message, user, channel) {
 					bot.sendMessage(user, "You forgot to include a user name");
 				}
 			}
+		}, function(){
+			bot.sendMessage(user, "You can't use this command, sorry!")
 		});
 	});
 	
