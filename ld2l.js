@@ -206,11 +206,11 @@ function toggleBot(message, channel, user){
  * @param {object} user    User that wrote message
  */
 function sendCalendar(user){
-	bot.sendMessage(user, "Here are all the calendars in 4 time zones:\n"+
+	bot.sendMessage(user, "Hey, " + user.name + "! Here are all the calendars in 4 time zones:\n"+
 		"PDT: https://goo.gl/Ih8yyQ\n" +
 		"EDT: https://goo.gl/i0JNWV\n" +
 		"GMT: https://goo.gl/HN89PL\n" +
-		"SGT: https://goo.gl/DU2prp\n\n"
+		"SGT: https://goo.gl/DU2prp"
 		)
 }
 
