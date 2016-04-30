@@ -85,6 +85,9 @@ bot.on('message', function (msg) {
 			case "whoami":
 				showWhoAmI(msg.author, msg.channel);
 				break;
+			case "calendar":
+				sendCalendar(msg.author);
+				break;
 			case "help":
 				showHelp(msg.channel, msg.author);
 				break;
@@ -196,6 +199,19 @@ function toggleBot(message, channel, user){
 			}
 		});
 	}
+}
+
+/**
+ * Send calendar to users
+ * @param {object} user    User that wrote message
+ */
+function sendCalendar(user){
+	bot.sendMessage(user, "Here are all the calendars in 4 time zones:\n"+
+		"PDT: https://goo.gl/Ih8yyQ\n" +
+		"EDT: https://goo.gl/i0JNWV\n" +
+		"GMT: https://goo.gl/HN89PL\n" +
+		"SGT: https://goo.gl/DU2prp\n\n"
+		)
 }
 
 /**
