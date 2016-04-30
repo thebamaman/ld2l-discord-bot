@@ -1,7 +1,7 @@
 /**
  * LD2L Bot: A discord bot for LD2L
  * Made with love and care so that we can properly schedule things in LD2L
- * @version 1.1.4
+ * @version 1.2
  * @author Alex Muench (Upstairs/Downstairs), Hiemanshu Sharma (hiemanshu)
  */
 
@@ -209,9 +209,9 @@ function sendCalendar(user){
 	bot.sendMessage(user, "Hey, " + user.name + "! Here are all the calendars in 4 time zones:\n"+
 		"PDT: https://goo.gl/Ih8yyQ\n" +
 		"EDT: https://goo.gl/i0JNWV\n" +
-		"GMT: https://goo.gl/HN89PL\n" +
+		"GMT: https://goo.gl/lY72yl\n" +
 		"SGT: https://goo.gl/DU2prp"
-		)
+	);
 }
 
 /**
@@ -454,13 +454,35 @@ function findMatches(message, user, channel) {
 		checkUser(user, 'casters', function() {
 			//checks to make sure message was sent via PM
 			if (channel.constructor.name === "PMChannel") {
-				// match for username
-				var regExp = /!findmatches\s+(.+)/gi;
-				var match = regExp.exec(message);
-				console.log(match);
+				// match for username and date options
+				var regExpDate = /!findmatches\s+([0-3][0-9]\/[0-1]\d\/\d\d\d\d)/gi;
+				var regExpUsername = /!findmatches\s+(.+)/gi;
+				var matchUser = regExpUsername.exec(message);
+				var matchDate = regExpDate.exec(message);
 
-				if(match){
-					var userName = match[1];
+				//check if date
+				if(matchDate){
+					var date = matchDate[1] + " 12:00 am";
+					CalendarApi.getEvents(date, function(eventsArray){
+						if(eventsArray.status == "Success"){
+							//data comes back from google as a stringified array, we need to re-parse back into array
+							var parsedArray = JSON.parse(eventsArray.data);
+							//setup message
+							var userMessage = "The following matches are listed for **" + date + "**.  *All times in GMT*:\n\n";
+							//iterate through array and create string to pass to user
+							for (var i = 0; i < parsedArray.length; i++) {
+								var eventString = "**" + parsedArray[i].id.split("@")[0] + "** | " + parsedArray[i].name.split(": ")[1] + " @ " + parsedArray[i].time.split("T")[1].split(".")[0] + "\n";
+								userMessage += eventString;
+							}
+							bot.sendMessage(user, userMessage);
+						}else{
+							//message if error
+							bot.sendMessage(user, "Sorry, there was an error making your request, please try again or contact an admin");
+						}
+					});
+				//if not date, check if username used
+				}else if(matchUser){
+					var userName = matchUser[1];
 
 					//find user on server
 					var userWithMatches = bot.users.get("username", userName);
@@ -479,7 +501,7 @@ function findMatches(message, user, channel) {
 										//creates string from list of events in object
 										for(var i = 0, len = eventKeys.length; i < len; i++){
 											var eventString = "";
-											eventString+= "Event ID: **" + eventKeys[i] + "** || " + events[eventKeys[i]].team1 + " VS " + events[eventKeys[i]].team2 + " @ " + events[eventKeys[i]].date + "\n";
+											eventString+= "**" + eventKeys[i] + "** | " + events[eventKeys[i]].team1 + " vs " + events[eventKeys[i]].team2 + " @ " + events[eventKeys[i]].date + "\n";
 											eventBlock+= eventString;
 										}
 										//sends message to user with events
@@ -498,7 +520,7 @@ function findMatches(message, user, channel) {
 						bot.sendMessage(user, "User does not exist.  Name must match exactly, and is case sensitive");
 					}
 				}else{
-					bot.sendMessage(user, "You forgot to include a user name");
+					bot.sendMessage(user, "You forgot to include a user name or date");
 				}
 			}
 		}, function(){
@@ -546,20 +568,22 @@ function showHelp(channel, user) {
 		"*!schedule GROUP <Letter> <Team 1> VS <Team 2> DD/MM/YYYY HH:MM AM/PM <EDT/PDT/SGT/GMT>*\n" +
 		"Example: GROUP E NASOLO#1 VS NASOLO#2 25/04/2016 04:00PM EDT\n\n" +
 		"To know if I recognize you, use *!whoami* in a PM.\n\n" + 
+		"To get a link for all the calendars, type *!calendar* anywhere.\n\n" + 
 		"To see a list of the matches you have scheduled, use *!showMatches* in a PM\n\n" +
 		"To remove a match you have scheduled, type *!deschedule <matchID>* in a PM. Match IDs are shown in !showMatches\n\n" +
 		"If there are any issues with the bot, ping @Upstairs/Downstairs, @hiemanshu, or log an issue here: https://github.com/ammuench/ld2l-discord-bot/issues\n\n";
 		//checks if user is admin, then adds additional commands
 		checkUser(user, 'casters', function() {
 			helpMsg = helpMsg  +
-			"To see another users scheduled matches (with matchIDs) use !findMatches <user name>.\nOnly works in PM.\n\n"+
+			"To see another users scheduled matches (with matchIDs) use *!findMatches <user name>*.\nOnly works in PM.\n\n"+
+			"To see all of one day's scheduled matches (with matchIDs) use *!findMatches DD/MM/YYYY*.\nOnly works in PM.\n\n"+
 			"To set casters for an event, use *!setCasters <matchID>: <Names of casters separated by space>*.\n**Every time you use setCasters it will overwrite the previous casters for that event**. Only works in PM\n\n";
 		}, function() {
 			//do
 		});
 		checkUser(user, 'admins', function() {
 			helpMsg = helpMsg +
-			"To add another admin use !add <user name>.\nOnly works in PM, fails silently in public channels\n\n";
+			"To add another admin use *!add <user name>*.\nOnly works in PM, fails silently in public channels\n\n";
 			bot.sendMessage(channel, helpMsgPmed);
 			bot.sendMessage(user, helpMsg);
 		}, function() {

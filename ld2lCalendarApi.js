@@ -21,7 +21,7 @@ module.exports = {
       // Authorize a client with the loaded credentials, then call the
       // Google Apps Script Execution API.
       authorize(JSON.parse(content), scheduleInfo, function(oauth, calEvent){
-        callAppsScript(oauth, calEvent, function(eventID){
+        addToCalendar(oauth, calEvent, function(eventID){
           callback(eventID);
         })
       });
@@ -52,6 +52,21 @@ module.exports = {
       // Google Apps Script Execution API.
       authorize(JSON.parse(content), casterArray, function(oauth, casterArray, casters){
         setCaster(oauth, casterArray, function(status){
+          callback(status);
+        })
+      });
+    });
+  },
+  getEvents: function(date, callback) {
+    fs.readFile('client_secret.json', function processClientSecrets(err, content) {
+      if (err) {
+        console.log('Error loading client secret file: ' + err);
+        return;
+      }
+      // Authorize a client with the loaded credentials, then call the
+      // Google Apps Script Execution API.
+      authorize(JSON.parse(content), date, function(oauth, date, casters){
+        getCalEvents(oauth, date, function(status){
           callback(status);
         })
       });
@@ -139,7 +154,7 @@ function storeToken(token) {
  *
  * @param {google.auth.OAuth2} auth An authorized OAuth2 client.
  */
-function callAppsScript(auth, scheduleInfo, callback) {
+function addToCalendar(auth, scheduleInfo, callback) {
   var scriptId = 'M11dUZp9TOMHRvOK1io6Gr2l4h4jajEHq';
   var script = google.script('v1');
 
@@ -275,6 +290,53 @@ function setCaster(auth, casterArray, callback) {
       callback({status: "Error", message: error.errorMessage});
     }else{
       callback({status: "Success", message: "Casters added to game"});
+    }
+  });
+}
+
+function getCalEvents(auth, date, callback) {
+  var scriptId = 'M11dUZp9TOMHRvOK1io6Gr2l4h4jajEHq';
+  var script = google.script('v1');
+
+  var momentDate = moment(date, "DD/MM/YYYY");
+  console.log(momentDate);
+  var formattedDate = momentDate.format("MMMM DD YYYY hh:mm a") + " GMT";
+  console.log(formattedDate);
+
+  // Make the API request. The request object is included here as 'resource'.
+  script.scripts.run({
+    auth: auth,
+    resource: {
+      function: 'getEvents',
+      parameters: [formattedDate]
+    },
+    scriptId: scriptId
+  }, function(err, resp) {
+    if (err) {
+      // The API encountered a problem before the script started executing.
+      console.log('The API returned an error: ' + err);
+      return;
+    }
+    if (resp.error) {
+      // The API executed, but the script returned an error.
+
+      // Extract the first (and only) set of error details. The values of this
+      // object are the script's 'errorMessage' and 'errorType', and an array
+      // of stack trace elements.
+      var error = resp.error.details[0];
+      console.log('Script error message: ' + error.errorMessage);
+      console.log('Script error stacktrace:');
+
+      if (error.scriptStackTraceElements) {
+        // There may not be a stacktrace if the script didn't start executing.
+        for (var i = 0; i < error.scriptStackTraceElements.length; i++) {
+          var trace = error.scriptStackTraceElements[i];
+          console.log('\t%s: %s', trace.function, trace.lineNumber);
+        }
+      }
+      callback({status: "Error", message: error.errorMessage});
+    }else{
+      callback({status: "Success", data: resp.response.result});
     }
   });
 }

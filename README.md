@@ -6,6 +6,10 @@ A Discord Bot to help run and streamline services within the Learn Dota 2 League
 LD2L Bot is a bot that sits in the official LD2L Discord server and runs some very helpful services to try to keep things running smoothly for the league.
 
 ##What's New?##
+	v1.2
+	-added new command !calendar to PM user a link for the game calendar in each timezone
+	-updated !findMatches command to search by date
+
     v1.1.4
     -fixed bug with !findmatches when it was used by non-casters
     
@@ -25,8 +29,10 @@ LD2L Bot is a bot that sits in the official LD2L Discord server and runs some ve
 LD2L Bot accepts various commands from various users.  Every member of the server has access to the following basic commands (NOTE!  Permissions may change with league admin discretion):
 
     !whoami
-
 Tells you who you are, according to LD2L Bot. Only usable via PM
+
+    !calendar
+Sends you a PM with a link to a calendar in each offical timezone
 
     !schedule GROUP <Letter> <Team 1> VS <Team 2> DD/MM/YYYY HH:MM AM/PM <EDT/PDT/SGT/GMT>
 Adds your game to the LD2L Google Calendar.  Only usable in the #scheduling channel
@@ -38,10 +44,13 @@ Shows you a list of matches that you have scheduled, along with their unique IDs
 Removes the specified match from the calendar.  Good for if you screw something up or need to reschedule.  Only usable via PM
 
     !findMatches <userName>
-Casters only!  Shows you a list of matches that a user has scheduled, along with their unique IDs.  Only usable via PM
+**Casters only!**  Shows you a list of matches that a user has scheduled, along with their unique IDs.  Only usable via PM
+
+	!findMatches DD/MM/YYY
+**Casters only!**  Shows you a list of matches that are occuring that day.  Uses GMT time.  Only usable via PM
 
     !setCasters <matchID>: <casternames separated by spaces>
-Casters only!  Adds casters to the specified match from the calendar.  Will overwrite existing casters everytime its used, so please list all names in one go.  Only usable via PM
+**Casters only!**  Adds casters to the specified match from the calendar.  Will overwrite existing casters everytime its used, so please list all names in one go.  Only usable via PM
 
 ## Future Features List: ##
 LD2L Bot has been scrapped together in free time over the past week just to get it to serve up some basic functionality.  But more is coming!  The following features are planned to be integrated in the next few weeks:

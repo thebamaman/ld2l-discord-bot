@@ -22,3 +22,18 @@ function setCaster(eventID, casters) {
   event.setDescription(casters);
   return(event.getDescription());  
 }
+
+function getEvents(date){
+  calendar = getCalendar();
+  var eventArray = calendar.getEventsForDay(new Date(date));
+  var returnArray = [];
+  for (var i = 0, len = eventArray.length; i<len; i++){
+    var eventObj = {
+      id: eventArray[i].getId(),
+      name: eventArray[i].getTitle(),
+      time: eventArray[i].getStartTime() 
+    }
+    returnArray.push(eventObj);
+  }
+  return JSON.stringify(returnArray);
+}
