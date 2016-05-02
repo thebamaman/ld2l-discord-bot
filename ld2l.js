@@ -1,7 +1,7 @@
 /**
  * LD2L Bot: A discord bot for LD2L
  * Made with love and care so that we can properly schedule things in LD2L
- * @version 1.2
+ * @version 1.2.1
  * @author Alex Muench (Upstairs/Downstairs), Hiemanshu Sharma (hiemanshu)
  */
 
@@ -308,7 +308,7 @@ function deScheduleMatch(message, channel, user) {
 				var regExp = /(!deschedule)\s+(.+)/gi;
 				var deScheduleMatch = regExp.exec(message);
 				//make sure that they only placed the event ID after the !deschedule command and not other stuff
-				if (deScheduleMatch[2].indexOf(' ') == -1) {
+				if (deScheduleMatch) {
 					CalendarApi.deleteFromCalendar(deScheduleMatch[2], function(status){
 						//If event removal is successful, removes event from user
 						if(status.status == 'Success'){
