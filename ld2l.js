@@ -1,7 +1,7 @@
 /**
  * LD2L Bot: A discord bot for LD2L
  * Made with love and care so that we can properly schedule things in LD2L
- * @version 1.2.1
+ * @version 1.2.2
  * @author Alex Muench (Upstairs/Downstairs), Hiemanshu Sharma (hiemanshu)
  */
 
@@ -537,7 +537,7 @@ function findMatches(message, user, channel) {
 function showInvalidCommand(channel) {
 	//checks to make sure bot is on
 	isBotOn(function(){
-		var invalidCommandMsg = "That was a invalid command. Try again. Use !help for help."
+		var invalidCommandMsg = "That was an invalid command. Try again. Use !help for help."
 		//sends message to user letting them know command is invalid
 		bot.sendMessage(channel, invalidCommandMsg);
 	});
