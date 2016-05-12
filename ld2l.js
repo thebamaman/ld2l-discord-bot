@@ -67,6 +67,9 @@ bot.on('message', function (msg) {
 			case "addcaster":
 				addCaster(message, msg.author, msg.channel);
 				break;
+			case "removecasters":
+				removeCasters(message, msg.author, msg.channel);
+				break;
 			case "setcasters":
 				setCasters(message, msg.author, msg.channel);
 				break;
@@ -132,6 +135,8 @@ function addAdmin(message, user, channel) {
 				bot.sendMessage(user, "User does not exist.  Name must match exactly, and is case sensitive");
 			}
 		}
+	},function(){
+		//fail silently
 	});
 }
 
@@ -175,9 +180,24 @@ function addCaster(message, user, channel) {
 				bot.sendMessage(user, "You forgot to include a username");
 			}
 		}
+	}, function(){
+		//fail silently
 	});
 }
 
+/**
+ * Finds channel by name, returns ID
+ * @param  {string} name String of channel requested
+ * @return {string}      Numeric ID for channel as ID.  Will fail silently if failed to match
+ */
+function findChannel(name){
+	//parse through all channels on current server to find one with matching name
+	for (var i = bot.channels.length - 1; i >= 0; i--) {
+		if (bot.channels[i].name == name){
+			return bot.channels[i].id
+		}
+	}
+}
 
 /**
  * Toggles bot on/off
@@ -197,6 +217,8 @@ function toggleBot(message, channel, user){
 				firebaseDb.child('allowBot').set(false);
 				bot.sendMessage(user, "LD2L Bot is now off.  No messages or commands, except '!toggleBot' and '!add' will be accepted :(");
 			}
+		},function(){
+		//fail silently
 		});
 	}
 }
@@ -432,11 +454,58 @@ function setCasters(message, user, channel) {
 				
 			}, function() {
 				//sends message to user if they're not registered
-				bot.sendMessage(user, "I'm sorry, only admin casters can user this command");
+				bot.sendMessage(user, "I'm sorry, only casters can user this command");
 			});
 		} else {
 			//sends message to user if they use command outside of PM
 			bot.sendMessage(user, "You can't use !setCasters");
+		}
+	});
+	
+}
+
+/**
+ * Sets casters for a scheduled match
+ * @param {object} message Message that prompted command
+ * @param {object} user    User that wrote message
+ * @param {object} channel Channel that message came from
+ */
+function removeCasters(message, user, channel) {
+	//checks if bot is on
+	isBotOn(function(){
+		//checks to make sure command was sent via PM
+		if (channel.constructor.name === "PMChannel") {
+			//checks to make sure user is a caster
+			checkUser(user, 'casters', function() {
+				var regExp = /!removeCasters\s+(\d+|\w+)/gi;
+				var match = regExp.exec(message);
+				if(match){
+					//we use an array to pass all the data in one object
+					var casterArray = []
+					//gets match ID
+					casterArray.push(match[1]);
+					//gets users (separates each by new line)
+					casterArray.push("");
+					CalendarApi.setCaster(casterArray, function(status){
+						if(status.status == "Success"){
+							//let user know they added casters
+							bot.sendMessage(user, "You have successfully removed all casters from match " + casterArray[0]);
+						}else{
+							bot.sendMessage(user, "Error occurred while removing casters: \n" + status.message);
+						}
+					});
+				}else{
+					//sends message to user if they're not registered
+					bot.sendMessage(user, "I'm sorry, your format is incorrect. Please type '!help' if you need assistance");
+				}
+				
+			}, function() {
+				//sends message to user if they're not registered
+				bot.sendMessage(user, "I'm sorry, only casters can user this command");
+			});
+		} else {
+			//sends message to user if they use command outside of PM
+			bot.sendMessage(user, "You can't use !removeCasters here");
 		}
 	});
 	
@@ -579,7 +648,7 @@ function showHelp(channel, user) {
 			"To see all of one day's scheduled matches (with matchIDs) use *!findMatches DD/MM/YYYY*.\nOnly works in PM.\n\n"+
 			"To set casters for an event, use *!setCasters <matchID>: <Names of casters separated by space>*.\n**Every time you use setCasters it will overwrite the previous casters for that event**. Only works in PM\n\n";
 		}, function() {
-			//do
+			//do nothing
 		});
 		checkUser(user, 'admins', function() {
 			helpMsg = helpMsg +
