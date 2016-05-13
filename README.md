@@ -9,6 +9,7 @@ LD2L Bot is a bot that sits in the official LD2L Discord server and runs some ve
 	v1.3
 	-Fixed some bugs that made things crash
 	-Added new !removeCasters command to remove casters from an event
+	-Adding or removing casters, or removing a scheduled event will now alert the respective channel, letting people know it's been done
 
 	v1.2.2
 	-BUGFIX FOR CRITICAL 'AN'
