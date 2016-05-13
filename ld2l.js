@@ -346,6 +346,8 @@ function deScheduleMatch(message, channel, user) {
 							});
 							//sends success message if use
 							bot.sendMessage(user, "Your event has been removed, please reschedule it if need be!");
+							bot.sendMessage(findChannel('scheduling'), status.data + " has been removed from the schedule by " + user.name);
+							console.log(status.data);
 
 						}else{
 							//sends message if removal fails at the calendar level

@@ -13,14 +13,16 @@ function getCalendar() {
 function deleteEvent(eventID) {
   calendar = getCalendar();
   event = calendar.getEventSeriesById(eventID);
-  event.deleteEventSeries();  
+  var eventName = event.getTitle();
+  event.deleteEventSeries();
+  return eventName;
 }
 
 function setCaster(eventID, casters) {
   calendar = getCalendar();
   event = calendar.getEventSeriesById(eventID);
   event.setDescription(casters);
-  return(event.getDescription());  
+  return event.getDescription();  
 }
 
 function getEvents(date){

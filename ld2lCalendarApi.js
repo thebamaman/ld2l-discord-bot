@@ -244,7 +244,7 @@ function deleteEvent(auth, eventID, callback) {
       }
       callback({status: "Error", message: error.errorMessage});
     }else{
-      callback({status: "Success", message: "Your event has been removed"});
+      callback({status: "Success", message: "Your event has been removed", "data": resp.response.result});
     }
   });
 }
