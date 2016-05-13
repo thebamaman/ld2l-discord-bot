@@ -649,7 +649,7 @@ function showHelp(channel, user) {
 			"To see another users scheduled matches (with matchIDs) use *!findMatches <user name>*.\nOnly works in PM.\n\n"+
 			"To see all of one day's scheduled matches (with matchIDs) use *!findMatches DD/MM/YYYY*.\nOnly works in PM.\n\n"+
 			"To set casters for an event, use *!setCasters <matchID>: <Names of casters separated by space>*.\n**Every time you use setCasters it will overwrite the previous casters for that event**. Only works in PM\n\n"+
-			"To remove all casters for an event, use *!removeCasters <matchID>*.  This removes **ALL** casters for that event. Only works in PM";
+			"To remove all casters for an event, use *!removeCasters <matchID>*.  This removes **ALL** casters for that event. Only works in PM\n\n";
 		}, function() {
 			//do nothing
 		});
