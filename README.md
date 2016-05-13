@@ -6,6 +6,10 @@ A Discord Bot to help run and streamline services within the Learn Dota 2 League
 LD2L Bot is a bot that sits in the official LD2L Discord server and runs some very helpful services to try to keep things running smoothly for the league.
 
 ##What's New?##
+	v1.3
+	-Fixed some bugs that made things crash
+	-Added new !removeCasters command to remove casters from an event
+
 	v1.2.2
 	-BUGFIX FOR CRITICAL 'AN'
 

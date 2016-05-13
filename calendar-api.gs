@@ -22,7 +22,7 @@ function setCaster(eventID, casters) {
   calendar = getCalendar();
   event = calendar.getEventSeriesById(eventID);
   event.setDescription(casters);
-  return event.getDescription();  
+  return event.getTitle();  
 }
 
 function getEvents(date){

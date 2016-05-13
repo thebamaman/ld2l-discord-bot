@@ -1,7 +1,7 @@
 /**
  * LD2L Bot: A discord bot for LD2L
  * Made with love and care so that we can properly schedule things in LD2L
- * @version 1.2.2
+ * @version 1.3
  * @author Alex Muench (Upstairs/Downstairs), Hiemanshu Sharma (hiemanshu)
  */
 
@@ -347,8 +347,6 @@ function deScheduleMatch(message, channel, user) {
 							//sends success message if use
 							bot.sendMessage(user, "Your event has been removed, please reschedule it if need be!");
 							bot.sendMessage(findChannel('scheduling'), status.data + " has been removed from the schedule by " + user.name);
-							console.log(status.data);
-
 						}else{
 							//sends message if removal fails at the calendar level
 							bot.sendMessage(user, "We couldn't remove your event for the following reason: " + status.message + "\nPlease try again.  If issue persists, contact an admin for help");
@@ -445,6 +443,7 @@ function setCasters(message, user, channel) {
 						if(status.status == "Success"){
 							//let user know they added casters
 							bot.sendMessage(user, "You have successfully added casters to a match!");
+							bot.sendMessage(findChannel('casters'), user.name + " has added the casters:\n\n" + match[3].split(" ").join("\n") + "\n\nfor : " + status.data);
 						}else{
 							bot.sendMessage(user, "Error occurred while adding casters: \n" + status.message);
 						}
@@ -492,6 +491,7 @@ function removeCasters(message, user, channel) {
 						if(status.status == "Success"){
 							//let user know they added casters
 							bot.sendMessage(user, "You have successfully removed all casters from match " + casterArray[0]);
+							bot.sendMessage(findChannel('casters'), user.name + " has removed all casters for " + status.data);
 						}else{
 							bot.sendMessage(user, "Error occurred while removing casters: \n" + status.message);
 						}

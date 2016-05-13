@@ -289,7 +289,7 @@ function setCaster(auth, casterArray, callback) {
       }
       callback({status: "Error", message: error.errorMessage});
     }else{
-      callback({status: "Success", message: "Casters added to game"});
+      callback({status: "Success", message: "Casters added to game", "data": resp.response.result});
     }
   });
 }
