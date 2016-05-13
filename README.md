@@ -63,6 +63,10 @@ Removes the specified match from the calendar.  Good for if you screw something 
     !setCasters <matchID>: <casternames separated by spaces>
 **Casters only!**  Adds casters to the specified match from the calendar.  Will overwrite existing casters everytime its used, so please list all names in one go.  Only usable via PM
 
+    !removeCasters <matchID>
+**Casters only!**  Removes all casters currently scheduled for a match.  Only usable via PM
+
+
 ## Future Features List: ##
 LD2L Bot has been scrapped together in free time over the past week just to get it to serve up some basic functionality.  But more is coming!  The following features are planned to be integrated in the next few weeks:
 
