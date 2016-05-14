@@ -84,5 +84,5 @@ LD2L Bot has been scrapped together in free time over the past week just to get 
 ## Want to help? ##
 If you find an issue while using the bot, [go over to the issues page](https://github.com/ammuench/ld2l-discord-bot/issues) for our project and log a bug report for us please!  Be as specific as you can!!
 
-If you enjoy programming and wanna help us write new features or fix some bugs, just make a pull request and go for it!  If you wanna do more frequent dev work, ping **@Upstairs/Downstairs** or **@hiemanshu** on the Discord Server and we can add you to the repo!
+If you enjoy programming and wanna help us write new features or fix some bugs, just make a pull request and go for it!  If you wanna do more frequent dev work, ping **@Upstairs/Downstairs** on the Discord Server and we can add you to the repo!
 

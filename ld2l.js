@@ -1,8 +1,8 @@
 /**
  * LD2L Bot: A discord bot for LD2L
  * Made with love and care so that we can properly schedule things in LD2L
- * @version 1.3
- * @author Alex Muench (Upstairs/Downstairs), Hiemanshu Sharma (hiemanshu)
+ * @version 1.3.1
+ * @author Alex Muench
  */
 
 //Require needs deps and auth file
@@ -331,27 +331,34 @@ function deScheduleMatch(message, channel, user) {
 				var deScheduleMatch = regExp.exec(message);
 				//make sure that they only placed the event ID after the !deschedule command and not other stuff
 				if (deScheduleMatch) {
-					CalendarApi.deleteFromCalendar(deScheduleMatch[2], function(status){
-						//If event removal is successful, removes event from user
-						if(status.status == 'Success'){
-							var userstring = user.id.toString();
-							//removes event object from user on server
-							firebaseDb.child('users/registered/'+ userstring +'/events/' + deScheduleMatch[2]).remove(function(error){
-								if(error){
-									console.log('Error removing object from ' + user.name + '\'s account');
-									console.log(error);
-									//sends message if user removal fails at the user level
-									bot.sendMessage(user, 'Your event was removed from the calendar, but not from your account, please contact a bot admin (@Upstairs/Downstairs, @hiemanshu)');
+					var userstring = user.id.toString();
+					useDB('users/registered/' + userstring + '/events/', function(events){
+						if(events[deScheduleMatch[2]]){
+							CalendarApi.deleteFromCalendar(deScheduleMatch[2], function(status){
+								//If event removal is successful, removes event from user
+								if(status.status == 'Success'){
+									//removes event object from user on server
+									firebaseDb.child('users/registered/'+ userstring +'/events/' + deScheduleMatch[2]).remove(function(error){
+										if(error){
+											console.log('Error removing object from ' + user.name + '\'s account');
+											console.log(error);
+											//sends message if user removal fails at the user level
+											bot.sendMessage(user, 'Your event was removed from the calendar, but not from your account, please contact a bot admin (@Upstairs/Downstairs, @hiemanshu)');
+										}
+									});
+									//sends success message if use
+									bot.sendMessage(user, "Your event has been removed, please reschedule it if need be!");
+									bot.sendMessage(findChannel('scheduling'), status.data + " has been removed from the schedule by " + user.name);
+								}else{
+									//sends message if removal fails at the calendar level
+									bot.sendMessage(user, "We couldn't remove your event for the following reason: " + status.message + "\nPlease try again.  If issue persists, contact an admin for help");
 								}
 							});
-							//sends success message if use
-							bot.sendMessage(user, "Your event has been removed, please reschedule it if need be!");
-							bot.sendMessage(findChannel('scheduling'), status.data + " has been removed from the schedule by " + user.name);
 						}else{
-							//sends message if removal fails at the calendar level
-							bot.sendMessage(user, "We couldn't remove your event for the following reason: " + status.message + "\nPlease try again.  If issue persists, contact an admin for help");
+							bot.sendMessage(user, "You can't remove events you did not create.  Please make sure the ID is correct");
 						}
 					});
+						
 				} else {
 					//sends message to user if id is malformed
 					bot.sendMessage(user, "Please only put the event ID after your command.  You can use !showMatches to see a list of your events and their event IDs")
